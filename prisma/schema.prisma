@@ -1,15 +1,262 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// This is your Prisma schema file
+// Learn more: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+// ===== USUARIOS Y AUTENTICACIÓN =====
+model Usuario {
+  id_usuario  Int      @id @default(autoincrement())
+  nombre      String
+  correo      String   @unique
+  contraseña  String
+  rol         String   // 'usuario', 'operador', 'administrador'
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relaciones
+  reservas    Reserva[]
+  comentarios Comentario[]
+  consultas   Consulta[]
+
+  @@map("usuarios")
+}
+
+// ===== HABITACIONES =====
+model Habitacion {
+  id_habitaciones     Int      @id @default(autoincrement())
+  id_sucursal         String?  // Mantén este campo si planeas agregar sucursales después
+  numero_habitaciones String   @unique
+  tipo                String   // 'simple', 'doble', 'suite', 'deluxe'
+  descripcion         String
+  precio              Decimal  @db.Decimal(10, 2)
+  estado              String   @default("disponible") // 'disponible', 'reservado', 'mantenimiento'
+  cantidad_personas   Int      @default(2)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  // Relaciones
+  reservas    Reserva[]
+  comentarios Comentario[]
+
+  @@map("habitaciones")
+}
+
+// ===== RESERVAS =====
+model Reserva {
+  id_reserva        Int      @id @default(autoincrement())
+  id_usuario        Int
+  id_habitaciones   Int
+  fecha_inicio      DateTime
+  fecha_fin         DateTime
+  estado_reserva    String   @default("confirmada") // 'confirmada', 'cancelada', 'finalizada'
+  precio_total      Decimal  @db.Decimal(10, 2)
+  numero_huespedes  Int      @default(1)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relaciones
+  usuario      Usuario                    @relation(fields: [id_usuario], references: [id_usuario])
+  habitacion   Habitacion                 @relation(fields: [id_habitaciones], references: [id_habitaciones])
+  servicios    ReservaXServicio[]
+  actividades  ReservaXActividad[]
+  paquetes     ReservaXPaqueteTuristico[]
+  restaurante  ReservaXRestaurante[]
+  spa          ReservaXSpa[]
+  pagos        Pago[]
+
+  @@map("reservas")
+}
+
+// ===== SERVICIOS =====
+model Servicio {
+  id_servicio     Int     @id @default(autoincrement())
+  nombre_servicio String
+  descripcion     String
+  precio_servicio Decimal @db.Decimal(10, 2)
+
+  // Relaciones
+  reservas ReservaXServicio[]
+
+  @@map("servicios")
+}
+
+model ReservaXServicio {
+  id_reserva  Int
+  id_servicio Int
+  cantidad    Int     @default(1)
+
+  // Relaciones
+  reserva  Reserva  @relation(fields: [id_reserva], references: [id_reserva], onDelete: Cascade)
+  servicio Servicio @relation(fields: [id_servicio], references: [id_servicio])
+
+  @@id([id_reserva, id_servicio])
+  @@map("reservas_x_servicios")
+}
+
+// ===== ACTIVIDADES DEPORTIVAS =====
+model ActividadDeportiva {
+  id_actividad     Int     @id @default(autoincrement())
+  nombre_actividad String
+  descripcion      String
+  costo_actividad  Decimal @db.Decimal(10, 2)
+  costo_adicional  Decimal? @db.Decimal(10, 2)
+
+  // Relaciones
+  reservas ReservaXActividad[]
+
+  @@map("actividades_deportivas")
+}
+
+model ReservaXActividad {
+  id_reserva      Int
+  id_actividad    Int
+  fecha_actividad DateTime
+
+  // Relaciones
+  reserva   Reserva            @relation(fields: [id_reserva], references: [id_reserva], onDelete: Cascade)
+  actividad ActividadDeportiva @relation(fields: [id_actividad], references: [id_actividad])
+
+  @@id([id_reserva, id_actividad])
+  @@map("reservas_x_actividades")
+}
+
+// ===== SPA =====
+model Spa {
+  id_spa             Int     @id @default(autoincrement())
+  nombre_tratamiento String
+  descripcion        String
+  costo_tramamiento  Decimal @db.Decimal(10, 2)
+
+  // Relaciones
+  reservas ReservaXSpa[]
+
+  @@map("spa")
+}
+
+model ReservaXSpa {
+  id_reserva      Int
+  id_spa          Int
+  fecha_servicio  DateTime
+
+  // Relaciones
+  reserva Reserva @relation(fields: [id_reserva], references: [id_reserva], onDelete: Cascade)
+  spa     Spa     @relation(fields: [id_spa], references: [id_spa])
+
+  @@id([id_reserva, id_spa])
+  @@map("reservas_x_spa")
+}
+
+// ===== PAQUETES TURÍSTICOS =====
+model PaqueteTuristico {
+  id_paquete     Int     @id @default(autoincrement())
+  nombre_paquete String
+  descripcion    String
+  costo          Decimal @db.Decimal(10, 2)
+
+  // Relaciones
+  reservas ReservaXPaqueteTuristico[]
+
+  @@map("paquetes_turisticos")
+}
+
+model ReservaXPaqueteTuristico {
+  id_reserva Int
+  id_paquete Int
+
+  // Relaciones
+  reserva Reserva          @relation(fields: [id_reserva], references: [id_reserva], onDelete: Cascade)
+  paquete PaqueteTuristico @relation(fields: [id_paquete], references: [id_paquete])
+
+  @@id([id_reserva, id_paquete])
+  @@map("reservas_x_paquetes_turisticos")
+}
+
+// ===== RESTAURANTE =====
+model Restaurante {
+  id_restaurante          Int     @id @default(autoincrement())
+  nombre_plato            String
+  descripcion             String
+  categoria               String  // 'desayuno', 'almuerzo', 'cena', 'bebida'
+  precio                  Decimal @db.Decimal(10, 2)
+  disponible              Boolean @default(true)
+  tiempo_preparacion      Int?    // en minutos
+  ingredientes_especiales String?
+
+  // Relaciones
+  reservas ReservaXRestaurante[]
+
+  @@map("restaurante")
+}
+
+model ReservaXRestaurante {
+  id_reserva         Int
+  id_restaurante     Int
+  cantidad           Int      @default(1)
+  fecha_consumo      DateTime
+  horario_solicitado String?
+  observaciones      String?
+
+  // Relaciones
+  reserva     Reserva     @relation(fields: [id_reserva], references: [id_reserva], onDelete: Cascade)
+  restaurante Restaurante @relation(fields: [id_restaurante], references: [id_restaurante])
+
+  @@id([id_reserva, id_restaurante])
+  @@map("reservas_x_restaurante")
+}
+
+// ===== COMENTARIOS =====
+model Comentario {
+  id_comentarios Int      @id @default(autoincrement())
+  id_habitacion  Int
+  id_usuarios    Int
+  contenido      String
+  fecha          DateTime @default(now())
+  calificacion   Int      // 1-5 estrellas
+
+  // Relaciones
+  habitacion Habitacion @relation(fields: [id_habitacion], references: [id_habitaciones])
+  usuario    Usuario    @relation(fields: [id_usuarios], references: [id_usuario])
+
+  @@map("comentarios")
+}
+
+// ===== CONSULTAS =====
+model Consulta {
+  id_consulta           Int       @id @default(autoincrement())
+  id_usuario            Int
+  asunto                String
+  mensaje               String    @db.Text
+  fecha_consulta        DateTime  @default(now())
+  respuesta             String?   @db.Text
+  fecha_respuesta       DateTime?
+  id_operador_respuesta Int?
+  estado                String    @default("pendiente") // 'pendiente', 'respondido'
+
+  // Relaciones
+  usuario Usuario @relation(fields: [id_usuario], references: [id_usuario])
+
+  @@map("consultas")
+}
+
+// ===== PAGOS =====
+model Pago {
+  id_pago            Int      @id @default(autoincrement())
+  id_reserva         Int
+  monto              Decimal  @db.Decimal(10, 2)
+  metodo_pago        String   // 'tarjeta', 'efectivo', 'transferencia'
+  estado_pago        String   @default("pendiente") // 'pendiente', 'completado', 'fallido'
+  fecha_pago         DateTime @default(now())
+  numero_transaccion String?  @unique
+
+  // Relaciones
+  reserva Reserva @relation(fields: [id_reserva], references: [id_reserva], onDelete: Cascade)
+
+  @@map("pagos")
 }
