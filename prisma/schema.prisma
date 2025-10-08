@@ -37,7 +37,7 @@ model Habitacion {
   descripcion         String
   precio              Decimal  @db.Decimal(10, 2)
   estado              String   @default("disponible") // 'disponible', 'reservado', 'mantenimiento'
-  cantidad_personas   Int      @default(2)
+  cantidad_personas   Int      
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
