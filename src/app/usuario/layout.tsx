@@ -1,11 +1,10 @@
-//(navbar + sidebard)
-
 'use client';
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
+// SVG Icons
 const Home = ({ className }: { className?: string }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
@@ -69,8 +68,10 @@ const X = ({ className }: { className?: string }) => (
 
 export default function UsuarioLayout({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     const userData = localStorage.getItem('user');
@@ -81,143 +82,218 @@ export default function UsuarioLayout({ children }: { children: React.ReactNode 
 
   const handleLogout = () => {
     localStorage.removeItem('user');
-    window.location.href = '/login';
+    router.push('/login');
   };
 
   const menuItems = [
-    { name: 'Inicio', href: '/usuario/dashboard', icon: Home },
-    { name: 'Habitaciones', href: '/usuario/habitaciones', icon: Bed },
-    { name: 'Mis Reservas', href: '/usuario/reservas', icon: Calendar },
-    { name: 'Servicios', href: '/usuario/servicios', icon: Star },
-    { name: 'Mi Perfil', href: '/usuario/perfil', icon: User },
+    { id: 'inicio', label: 'Inicio', icon: Home, href: '/usuario/dashboard' },
+    { id: 'habitaciones', label: 'Habitaciones', icon: Bed, href: '/usuario/habitaciones' },
+    { id: 'reservas', label: 'Mis Reservas', icon: Calendar, href: '/usuario/reservas' },
+    { id: 'servicios', label: 'Servicios', icon: Star, href: '/usuario/servicios' },
+    { id: 'perfil', label: 'Mi Perfil', icon: User, href: '/usuario/perfil' },
   ];
+
+  const isActive = (href: string) => pathname === href;
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Navbar */}
-      <nav className="bg-gradient-to-r from-rose-primary to-rose-accent shadow-lg sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo */}
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="lg:hidden text-white hover:bg-white/10 p-2 rounded-lg transition-colors"
-              >
-                {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-              </button>
-              
-              <Link href="/usuario/dashboard" className="flex items-center space-x-3">
-                <img 
-                  src="/images/logo-hotel.png" 
-                  alt="Logo" 
-                  className="h-10 w-10 object-contain"
-                />
-                <span className="font-playfair text-xl font-bold text-white hidden sm:block">
-                  The Rose Garden
-                </span>
-              </Link>
-            </div>
+      {/* Top Bar - Marco Superior */}
+      <div className="h-3 bg-gradient-to-r from-rose-primary via-rose-accent to-gold"></div>
 
-            {/* User info */}
-            <div className="flex items-center space-x-4">
-              <div className="hidden md:flex items-center space-x-3 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg">
-                <div className="w-8 h-8 bg-gold rounded-full flex items-center justify-center">
-                  <User className="w-5 h-5 text-white" />
-                </div>
-                <div className="text-white">
-                  <p className="font-cormorant font-semibold text-sm">{user?.nombre || 'Usuario'}</p>
-                  <p className="font-inter text-xs opacity-80">{user?.email || ''}</p>
-                </div>
+      {/* Desktop Sidebar */}
+      <aside
+        className={`hidden lg:flex lg:flex-col bg-white shadow-xl border-r border-rose-light/50 transition-all duration-300 ease-in-out ${
+          isExpanded ? 'lg:w-64' : 'lg:w-20'
+        } rounded-r-3xl fixed left-0 top-3 bottom-0 z-40`}
+        onMouseEnter={() => setIsExpanded(true)}
+        onMouseLeave={() => setIsExpanded(false)}
+      >
+        {/* Logo */}
+        <div className="flex items-center justify-center p-6 border-b border-rose-light">
+          <div className={`flex ${isExpanded ? 'flex-row' : 'flex-col'} items-center space-x-3 transition-all duration-300`}>
+            <div className="w-12 h-12 bg-gradient-to-br from-rose-primary to-rose-accent rounded-full flex items-center justify-center p-2 border-2 border-gold/50">
+              <img 
+                src="/images/logo-hotel.png" 
+                alt="Logo" 
+                className="w-full h-full object-contain" 
+              />
+            </div>
+            {isExpanded && (
+              <div className="opacity-0 animate-fade-in">
+                <p className="font-playfair text-lg font-bold text-rose-primary">The Rose Garden</p>
+                <p className="font-cormorant text-xs text-gold italic">Hotel & Spa</p>
               </div>
-
-              <button
-                onClick={handleLogout}
-                className="flex items-center space-x-2 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg transition-all duration-200"
-              >
-                <LogOut className="w-4 h-4" />
-                <span className="font-inter text-sm hidden sm:inline">Cerrar Sesión</span>
-              </button>
-            </div>
+            )}
           </div>
         </div>
-      </nav>
 
-      <div className="flex">
-        {/* Sidebar Desktop */}
-        <aside className="hidden lg:flex lg:flex-col lg:w-64 bg-white border-r border-rose-light min-h-[calc(100vh-4rem)]">
-          <div className="p-6">
-            <h2 className="font-playfair text-lg font-bold text-rose-primary mb-4">Menú</h2>
-            <nav className="space-y-2">
-              {menuItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = pathname === item.href;
+        {/* Menu */}
+        <nav className="flex-1 px-3 py-6 space-y-2 overflow-hidden">
+          {menuItems.map(({ id, label, icon: Icon, href }) => {
+            const active = isActive(href);
+            return (
+              <Link
+                key={id}
+                href={href}
+                className={`flex items-center px-3 py-3 rounded-xl transition-all duration-200 group relative ${
+                  active
+                    ? 'bg-gradient-to-r from-rose-primary to-rose-accent text-white shadow-lg'
+                    : 'text-gray-700 hover:bg-rose-light/30'
+                }`}
+                title={!isExpanded ? label : undefined}
+              >
+                <Icon className={`flex-shrink-0 transition-all duration-200 ${isExpanded ? 'w-5 h-5' : 'w-6 h-6'}`} />
+                {isExpanded && (
+                  <span className="ml-3 font-inter font-medium whitespace-nowrap opacity-0 animate-fade-in">
+                    {label}
+                  </span>
+                )}
+                
+                {!isExpanded && (
+                  <div className="absolute left-full ml-2 px-3 py-1 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                    {label}
+                  </div>
+                )}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Usuario y Logout */}
+        <div className="p-4 border-t border-rose-light space-y-3">
+          <div className={`flex items-center ${isExpanded ? 'px-3' : 'justify-center'} transition-all duration-300`}>
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-rose-primary to-gold flex items-center justify-center text-white font-bold flex-shrink-0 font-playfair">
+              {getInitials(user?.nombre || 'Usuario')}
+            </div>
+            {isExpanded && (
+              <div className="ml-3 opacity-0 animate-fade-in overflow-hidden">
+                <p className="font-cormorant text-sm font-semibold text-gray-800 truncate">{user?.nombre || 'Usuario'}</p>
+                <p className="font-inter text-xs text-gray-500 truncate">{user?.email || ''}</p>
+              </div>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={handleLogout}
+            className={`w-full flex items-center px-3 py-3 text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all duration-200 group relative ${
+              !isExpanded && 'justify-center'
+            }`}
+            title={!isExpanded ? 'Cerrar sesión' : undefined}
+          >
+            <LogOut className={`flex-shrink-0 transition-all duration-200 ${isExpanded ? 'w-5 h-5' : 'w-6 h-6'}`} />
+            {isExpanded && (
+              <span className="ml-3 font-inter font-medium opacity-0 animate-fade-in">Cerrar sesión</span>
+            )}
+            
+            {!isExpanded && (
+              <div className="absolute left-full ml-2 px-3 py-1 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                Cerrar sesión
+              </div>
+            )}
+          </button>
+        </div>
+      </aside>
+
+      {/* Mobile Header */}
+      <div className="lg:hidden fixed top-3 left-0 right-0 bg-white shadow-md z-50 border-b border-rose-light mx-4 rounded-xl">
+        <div className="flex items-center justify-between p-4">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-rose-primary to-rose-accent rounded-full flex items-center justify-center p-2">
+              <img src="/images/logo-hotel.png" alt="Logo" className="w-full h-full object-contain" />
+            </div>
+            <div>
+              <p className="font-playfair text-base font-bold text-rose-primary">The Rose Garden</p>
+              <p className="font-cormorant text-xs text-gold italic">Hotel & Spa</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="p-2 rounded-md text-gray-600 hover:text-rose-primary hover:bg-rose-light/30"
+          >
+            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Menu */}
+      {isMobileMenuOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+          onClick={() => setIsMobileMenuOpen(false)}
+        >
+          <div className="fixed left-0 top-20 bottom-0 w-64 bg-white shadow-lg rounded-r-3xl" onClick={(e) => e.stopPropagation()}>
+            <nav className="p-4 space-y-2">
+              {menuItems.map(({ id, label, icon: Icon, href }) => {
+                const active = isActive(href);
                 return (
                   <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-                      isActive
-                        ? 'bg-gradient-to-r from-rose-primary to-rose-accent text-white shadow-md'
+                    key={id}
+                    href={href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`flex items-center px-4 py-3 rounded-xl transition-all duration-200 ${
+                      active
+                        ? 'bg-gradient-to-r from-rose-primary to-rose-accent text-white shadow-lg'
                         : 'text-gray-700 hover:bg-rose-light/30'
                     }`}
                   >
-                    <Icon className="w-5 h-5" />
-                    <span className="font-inter text-sm font-medium">{item.name}</span>
+                    <Icon className="w-5 h-5 mr-3" />
+                    <span className="font-inter font-medium">{label}</span>
                   </Link>
                 );
               })}
+
+              <div className="pt-4 border-t border-rose-light space-y-3">
+                <div className="flex items-center px-4 py-2">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-rose-primary to-gold flex items-center justify-center text-white font-bold font-playfair">
+                    {getInitials(user?.nombre || 'Usuario')}
+                  </div>
+                  <div className="ml-3">
+                    <p className="font-cormorant text-sm font-semibold text-gray-800">{user?.nombre || 'Usuario'}</p>
+                    <p className="font-inter text-xs text-gray-500">{user?.email || ''}</p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="w-full flex items-center px-4 py-3 text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all duration-200"
+                >
+                  <LogOut className="w-5 h-5 mr-3" />
+                  <span className="font-inter font-medium">Cerrar sesión</span>
+                </button>
+              </div>
             </nav>
           </div>
-        </aside>
+        </div>
+      )}
 
-        {/* Sidebar Mobile */}
-        {sidebarOpen && (
-          <div className="lg:hidden fixed inset-0 z-40 bg-black/50" onClick={() => setSidebarOpen(false)}>
-            <aside
-              className="absolute left-0 top-0 h-full w-64 bg-white shadow-xl"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="font-playfair text-lg font-bold text-rose-primary">Menú</h2>
-                  <button onClick={() => setSidebarOpen(false)} className="text-gray-500 hover:text-gray-700">
-                    <X className="w-6 h-6" />
-                  </button>
-                </div>
-                <nav className="space-y-2">
-                  {menuItems.map((item) => {
-                    const Icon = item.icon;
-                    const isActive = pathname === item.href;
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={() => setSidebarOpen(false)}
-                        className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-                          isActive
-                            ? 'bg-gradient-to-r from-rose-primary to-rose-accent text-white shadow-md'
-                            : 'text-gray-700 hover:bg-rose-light/30'
-                        }`}
-                      >
-                        <Icon className="w-5 h-5" />
-                        <span className="font-inter text-sm font-medium">{item.name}</span>
-                      </Link>
-                    );
-                  })}
-                </nav>
-              </div>
-            </aside>
-          </div>
-        )}
+      {/* Main Content */}
+      <main className={`bg-white min-h-screen transition-all duration-300 ${isExpanded ? 'lg:ml-64' : 'lg:ml-20'} pt-3`}>
+        <div className="max-w-full">
+          {children}
+        </div>
+      </main>
 
-        {/* Main Content - FONDO BLANCO */}
-        <main className="flex-1 bg-white">
-          <div className="max-w-7xl mx-auto p-6">
-            {children}
-          </div>
-        </main>
-      </div>
+      <style jsx>{`
+        @keyframes fade-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        
+        .animate-fade-in {
+          animation: fade-in 0.3s ease-out forwards;
+        }
+      `}</style>
     </div>
   );
 }
