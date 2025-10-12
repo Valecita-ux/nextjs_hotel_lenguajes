@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
-// SVG Icons
+// === SVG Icons === (Mismos iconos)
 const Home = ({ className }: { className?: string }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
@@ -66,6 +66,7 @@ const X = ({ className }: { className?: string }) => (
   </svg>
 );
 
+// === Componente Principal ===
 export default function UsuarioLayout({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any>(null);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -105,22 +106,25 @@ export default function UsuarioLayout({ children }: { children: React.ReactNode 
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    // CAMBIO: Fondo principal a un gris muy claro o blanco
+    <div className="min-h-screen bg-gray-50"> 
+      
       {/* Top Bar - Marco Superior */}
-      <div className="h-3 bg-gradient-to-r from-rose-primary via-rose-accent to-gold"></div>
+      <div className="h-3 bg-gradient-to-r from-[#7B1D26] via-[#CA99AB] to-[#D4AF37]"></div>
 
       {/* Desktop Sidebar */}
       <aside
-        className={`hidden lg:flex lg:flex-col bg-white shadow-xl border-r border-rose-light/50 transition-all duration-300 ease-in-out ${
+        // CAMBIO: Fondo claro para el sidebar
+        className={`hidden lg:flex lg:flex-col bg-white text-gray-800 shadow-xl border-r border-gray-200 transition-all duration-300 ease-in-out ${
           isExpanded ? 'lg:w-64' : 'lg:w-20'
         } rounded-r-3xl fixed left-0 top-3 bottom-0 z-40`}
         onMouseEnter={() => setIsExpanded(true)}
         onMouseLeave={() => setIsExpanded(false)}
       >
         {/* Logo */}
-        <div className="flex items-center justify-center p-6 border-b border-rose-light">
+        <div className="flex items-center justify-center p-6 border-b border-gray-200">
           <div className={`flex ${isExpanded ? 'flex-row' : 'flex-col'} items-center space-x-3 transition-all duration-300`}>
-            <div className="w-12 h-12 bg-gradient-to-br from-rose-primary to-rose-accent rounded-full flex items-center justify-center p-2 border-2 border-gold/50">
+            <div className="w-12 h-12 bg-gradient-to-br from-[#7B1D26] to-[#CA99AB] rounded-full flex items-center justify-center p-2 border-2 border-[#D4AF37]/50">
               <img 
                 src="/images/logo-hotel.png" 
                 alt="Logo" 
@@ -129,8 +133,8 @@ export default function UsuarioLayout({ children }: { children: React.ReactNode 
             </div>
             {isExpanded && (
               <div className="opacity-0 animate-fade-in">
-                <p className="font-playfair text-lg font-bold text-rose-primary">The Rose Garden</p>
-                <p className="font-cormorant text-xs text-gold italic">Hotel & Spa</p>
+                <p className="font-playfair text-lg font-bold text-gray-800">The Rose Garden</p>
+                <p className="font-cormorant text-xs text-[#CA99AB] italic">Hotel & Spa</p>
               </div>
             )}
           </div>
@@ -146,12 +150,12 @@ export default function UsuarioLayout({ children }: { children: React.ReactNode 
                 href={href}
                 className={`flex items-center px-3 py-3 rounded-xl transition-all duration-200 group relative ${
                   active
-                    ? 'bg-gradient-to-r from-rose-primary to-rose-accent text-white shadow-lg'
-                    : 'text-gray-700 hover:bg-rose-light/30'
+                    ? 'bg-gradient-to-r from-[#7B1D26] to-[#CA99AB] text-white shadow-lg' // Fondo colorido para activo
+                    : 'text-gray-600 hover:bg-gray-100' // Colores de inactivo/hover adaptados al claro
                 }`}
                 title={!isExpanded ? label : undefined}
               >
-                <Icon className={`flex-shrink-0 transition-all duration-200 ${isExpanded ? 'w-5 h-5' : 'w-6 h-6'}`} />
+                <Icon className={`flex-shrink-0 transition-all duration-200 ${isExpanded ? 'w-5 h-5' : 'w-6 h-6'} ${active ? 'text-white' : 'text-gray-500 group-hover:text-[#7B1D26]'}`} />
                 {isExpanded && (
                   <span className="ml-3 font-inter font-medium whitespace-nowrap opacity-0 animate-fade-in">
                     {label}
@@ -169,9 +173,9 @@ export default function UsuarioLayout({ children }: { children: React.ReactNode 
         </nav>
 
         {/* Usuario y Logout */}
-        <div className="p-4 border-t border-rose-light space-y-3">
+        <div className="p-4 border-t border-gray-200 space-y-3">
           <div className={`flex items-center ${isExpanded ? 'px-3' : 'justify-center'} transition-all duration-300`}>
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-rose-primary to-gold flex items-center justify-center text-white font-bold flex-shrink-0 font-playfair">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#7B1D26] to-[#D4AF37] flex items-center justify-center text-white font-bold flex-shrink-0 font-playfair">
               {getInitials(user?.nombre || 'Usuario')}
             </div>
             {isExpanded && (
@@ -185,12 +189,12 @@ export default function UsuarioLayout({ children }: { children: React.ReactNode 
           <button
             type="button"
             onClick={handleLogout}
-            className={`w-full flex items-center px-3 py-3 text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all duration-200 group relative ${
+            className={`w-full flex items-center px-3 py-3 text-gray-600 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all duration-200 group relative ${
               !isExpanded && 'justify-center'
             }`}
             title={!isExpanded ? 'Cerrar sesión' : undefined}
           >
-            <LogOut className={`flex-shrink-0 transition-all duration-200 ${isExpanded ? 'w-5 h-5' : 'w-6 h-6'}`} />
+            <LogOut className={`flex-shrink-0 transition-all duration-200 ${isExpanded ? 'w-5 h-5' : 'w-6 h-6'} text-gray-500 group-hover:text-red-600`} />
             {isExpanded && (
               <span className="ml-3 font-inter font-medium opacity-0 animate-fade-in">Cerrar sesión</span>
             )}
@@ -205,20 +209,20 @@ export default function UsuarioLayout({ children }: { children: React.ReactNode 
       </aside>
 
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-3 left-0 right-0 bg-white shadow-md z-50 border-b border-rose-light mx-4 rounded-xl">
+      <div className="lg:hidden fixed top-3 left-0 right-0 bg-white shadow-md z-50 border-b border-gray-200 mx-4 rounded-xl">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-rose-primary to-rose-accent rounded-full flex items-center justify-center p-2">
+            <div className="w-10 h-10 bg-gradient-to-br from-[#7B1D26] to-[#CA99AB] rounded-full flex items-center justify-center p-2">
               <img src="/images/logo-hotel.png" alt="Logo" className="w-full h-full object-contain" />
             </div>
             <div>
-              <p className="font-playfair text-base font-bold text-rose-primary">The Rose Garden</p>
-              <p className="font-cormorant text-xs text-gold italic">Hotel & Spa</p>
+              <p className="font-playfair text-base font-bold text-gray-800">The Rose Garden</p>
+              <p className="font-cormorant text-xs text-[#CA99AB] italic">Hotel & Spa</p>
             </div>
           </div>
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="p-2 rounded-md text-gray-600 hover:text-rose-primary hover:bg-rose-light/30"
+            className="p-2 rounded-md text-gray-600 hover:text-[#7B1D26] hover:bg-gray-100"
           >
             {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -231,7 +235,7 @@ export default function UsuarioLayout({ children }: { children: React.ReactNode 
           className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
           onClick={() => setIsMobileMenuOpen(false)}
         >
-          <div className="fixed left-0 top-20 bottom-0 w-64 bg-white shadow-lg rounded-r-3xl" onClick={(e) => e.stopPropagation()}>
+          <div className="fixed left-0 top-20 bottom-0 w-64 bg-white text-gray-800 shadow-lg rounded-r-3xl" onClick={(e) => e.stopPropagation()}>
             <nav className="p-4 space-y-2">
               {menuItems.map(({ id, label, icon: Icon, href }) => {
                 const active = isActive(href);
@@ -242,19 +246,19 @@ export default function UsuarioLayout({ children }: { children: React.ReactNode 
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={`flex items-center px-4 py-3 rounded-xl transition-all duration-200 ${
                       active
-                        ? 'bg-gradient-to-r from-rose-primary to-rose-accent text-white shadow-lg'
-                        : 'text-gray-700 hover:bg-rose-light/30'
+                        ? 'bg-gradient-to-r from-[#7B1D26] to-[#CA99AB] text-white shadow-lg'
+                        : 'text-gray-600 hover:bg-gray-100'
                     }`}
                   >
-                    <Icon className="w-5 h-5 mr-3" />
+                    <Icon className={`w-5 h-5 mr-3 ${active ? 'text-white' : 'text-gray-500'}`} />
                     <span className="font-inter font-medium">{label}</span>
                   </Link>
                 );
               })}
 
-              <div className="pt-4 border-t border-rose-light space-y-3">
+              <div className="pt-4 border-t border-gray-200 space-y-3">
                 <div className="flex items-center px-4 py-2">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-rose-primary to-gold flex items-center justify-center text-white font-bold font-playfair">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#7B1D26] to-[#D4AF37] flex items-center justify-center text-white font-bold font-playfair">
                     {getInitials(user?.nombre || 'Usuario')}
                   </div>
                   <div className="ml-3">
@@ -266,9 +270,9 @@ export default function UsuarioLayout({ children }: { children: React.ReactNode 
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="w-full flex items-center px-4 py-3 text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all duration-200"
+                  className="w-full flex items-center px-4 py-3 text-gray-600 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all duration-200"
                 >
-                  <LogOut className="w-5 h-5 mr-3" />
+                  <LogOut className="w-5 h-5 mr-3 text-gray-500" />
                   <span className="font-inter font-medium">Cerrar sesión</span>
                 </button>
               </div>
@@ -278,7 +282,7 @@ export default function UsuarioLayout({ children }: { children: React.ReactNode 
       )}
 
       {/* Main Content */}
-      <main className={`bg-white min-h-screen transition-all duration-300 ${isExpanded ? 'lg:ml-64' : 'lg:ml-20'} pt-3`}>
+      <main className={`bg-gray-50 min-h-screen transition-all duration-300 ${isExpanded ? 'lg:ml-64' : 'lg:ml-20'} pt-3`}>
         <div className="max-w-full">
           {children}
         </div>
@@ -289,7 +293,6 @@ export default function UsuarioLayout({ children }: { children: React.ReactNode 
           from { opacity: 0; }
           to { opacity: 1; }
         }
-        
         .animate-fade-in {
           animation: fade-in 0.3s ease-out forwards;
         }

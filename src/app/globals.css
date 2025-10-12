@@ -6,16 +6,15 @@
   --font-cormorant: 'Cormorant Garamond', serif;
   --font-inter: 'Inter', sans-serif;
   
-  /* Colores del hotel (tema asiático/floral) */
-  --rose-primary: #7B1D26;      /* Antique Ruby */
-  --rose-secondary: #895A49;    /* Solid Pink */
-  --rose-accent: #CA99AB;       /* Parrot Pink */
-  --rose-light: #E4CDDD;        /* Queen Pink */
-  --gold: #D4AF37;              /* Dorado asiático */
-  --cream: #FFF8F0;             /* Crema suave */
+  /* Colores del hotel */
+  --rose-primary: #7B1D26;
+  --rose-secondary: #895A49;
+  --rose-accent: #CA99AB;
+  --rose-light: #E4CDDD;
+  --gold: #D4AF37;
+  --cream: #FFF8F0;
 }
 
-/* Clases para usar las fuentes */
 .font-playfair {
   font-family: var(--font-playfair);
 }

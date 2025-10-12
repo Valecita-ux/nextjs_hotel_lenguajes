@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
-// SVG Icons
+// === SVG Icons === (Mismos iconos)
 const Calendar = ({ className }: { className?: string }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -100,9 +100,6 @@ const Flower = ({ className }: { className?: string }) => (
 export default function UsuarioDashboard() {
   const [user, setUser] = useState<any>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [checkIn, setCheckIn] = useState('');
-  const [checkOut, setCheckOut] = useState('');
-  const [guests, setGuests] = useState(2);
 
   useEffect(() => {
     const userData = localStorage.getItem('user');
@@ -182,9 +179,11 @@ export default function UsuarioDashboard() {
   ];
 
   return (
-    <div className="space-y-0 bg-white">
-      {/* Hero Carousel */}
-      <div className="relative h-[600px] md:h-[700px] overflow-hidden group">
+    // CAMBIO: Fondo principal a un gris muy claro para el dashboard
+    <div className="space-y-0 bg-gray-50 min-h-screen"> 
+      
+      {/* 1. Hero Carousel */}
+      <div className="relative h-[650px] md:h-[800px] overflow-hidden group">
         {heroImages.map((image, index) => (
           <div
             key={index}
@@ -193,78 +192,25 @@ export default function UsuarioDashboard() {
             }`}
           >
             <img src={image.url} alt={image.title} className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+            {/* Mantenemos el overlay oscuro para que el texto resalte sobre la imagen */}
+            <div className="absolute inset-0 bg-black/70"></div> 
           </div>
         ))}
 
         {/* Content */}
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 z-10">
-          <div className="max-w-5xl space-y-6 mb-32">
-            <Flower className="w-20 h-20 text-gold mx-auto animate-pulse" />
+          <div className="max-w-5xl space-y-6">
+            <Flower className="w-20 h-20 text-[#D4AF37] mx-auto animate-pulse" />
             <h1 className="font-playfair text-5xl md:text-7xl font-bold text-white drop-shadow-2xl">
               The Rose Garden Hotel
             </h1>
-            <div className="w-40 h-1 bg-gold mx-auto rounded-full"></div>
+            <div className="w-40 h-1 bg-[#D4AF37] mx-auto rounded-full"></div>
             <p className="font-cormorant text-2xl md:text-4xl text-white/95 italic drop-shadow-lg">
               {heroImages[currentSlide].title}
             </p>
             <p className="font-inter text-lg md:text-xl text-white/85 max-w-2xl mx-auto">
               {heroImages[currentSlide].subtitle}
             </p>
-          </div>
-        </div>
-
-        {/* Search Box Floating */}
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-[95%] max-w-5xl bg-white rounded-2xl shadow-2xl p-6 z-20">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <label className="font-cormorant text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                <Calendar className="w-4 h-4 mr-2 text-rose-primary" />
-                Check-in
-              </label>
-              <input
-                type="date"
-                value={checkIn}
-                onChange={(e) => setCheckIn(e.target.value)}
-                className="w-full px-4 py-3 border border-rose-light rounded-lg font-inter focus:outline-none focus:ring-2 focus:ring-rose-accent"
-              />
-            </div>
-            <div>
-              <label className="font-cormorant text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                <Calendar className="w-4 h-4 mr-2 text-rose-primary" />
-                Check-out
-              </label>
-              <input
-                type="date"
-                value={checkOut}
-                onChange={(e) => setCheckOut(e.target.value)}
-                className="w-full px-4 py-3 border border-rose-light rounded-lg font-inter focus:outline-none focus:ring-2 focus:ring-rose-accent"
-              />
-            </div>
-            <div>
-              <label className="font-cormorant text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                <Users className="w-4 h-4 mr-2 text-rose-primary" />
-                Huéspedes
-              </label>
-              <select
-                value={guests}
-                onChange={(e) => setGuests(Number(e.target.value))}
-                className="w-full px-4 py-3 border border-rose-light rounded-lg font-inter focus:outline-none focus:ring-2 focus:ring-rose-accent"
-              >
-                {[1, 2, 3, 4, 5, 6].map(num => (
-                  <option key={num} value={num}>{num} {num === 1 ? 'Huésped' : 'Huéspedes'}</option>
-                ))}
-              </select>
-            </div>
-            <div className="flex items-end">
-              <Link
-                href="/usuario/habitaciones"
-                className="w-full bg-gradient-to-r from-rose-primary to-rose-accent hover:from-rose-accent hover:to-gold text-white py-3 rounded-lg font-cormorant font-bold text-lg flex items-center justify-center space-x-2 transition-all duration-300 shadow-lg hover:shadow-xl"
-              >
-                <Search className="w-5 h-5" />
-                <span>Buscar</span>
-              </Link>
-            </div>
           </div>
         </div>
 
@@ -283,21 +229,30 @@ export default function UsuarioDashboard() {
               key={index}
               onClick={() => setCurrentSlide(index)}
               className={`transition-all duration-300 rounded-full ${
-                index === currentSlide ? 'w-8 h-3 bg-gold' : 'w-3 h-3 bg-white/50 hover:bg-white/80'
+                index === currentSlide ? 'w-8 h-3 bg-[#D4AF37]' : 'w-3 h-3 bg-white/50 hover:bg-white/80'
               }`}
             />
           ))}
         </div>
       </div>
 
-      {/* Welcome Section */}
-      <div className="max-w-7xl mx-auto px-6 pt-24 pb-16">
+      {/* 2. Welcome Section */}
+      {/* CAMBIO: Fondo a blanco/claro y texto a oscuro */}
+      <div className="max-w-7xl mx-auto px-6 pt-16 pb-16 bg-white text-gray-800"> 
         <div className="text-center mb-12">
-          <span className="font-inter text-rose-accent uppercase tracking-wider text-sm font-semibold">Raising Comfort to the Highest Level</span>
-          <h2 className="font-playfair text-4xl md:text-5xl font-bold text-gray-800 mt-4 mb-6">
+          <div className="inline-block mb-4">
+            <span className="font-inter text-[#7B1D26] uppercase tracking-wider text-sm font-semibold px-6 py-2 bg-[#CA99AB]/20 rounded-full border-2 border-[#CA99AB]/30">
+              Raising Comfort to the Highest Level
+            </span>
+          </div>
+          <h2 className="font-playfair text-4xl md:text-5xl font-bold text-gray-800 mt-6 mb-6">
             Welcome to The Rose Garden Hotel
           </h2>
-          <div className="w-24 h-1 bg-gold mx-auto rounded-full mb-6"></div>
+          <div className="flex items-center justify-center space-x-3 mb-6">
+            <div className="w-16 h-1 bg-gradient-to-r from-transparent via-[#D4AF37] to-[#D4AF37] rounded-full"></div>
+            <Flower className="w-8 h-8 text-[#7B1D26]" />
+            <div className="w-16 h-1 bg-gradient-to-r from-[#D4AF37] via-[#D4AF37] to-transparent rounded-full"></div>
+          </div>
           <p className="font-inter text-gray-600 text-lg max-w-3xl mx-auto leading-relaxed">
             Nuestro hotel es la elección perfecta para visitantes que buscan una combinación de encanto y una posición conveniente desde donde explorar los alrededores. Las habitaciones están dispuestas en el primer, segundo y tercer piso. Disfrute de nuestra terraza encantadora o solárium disponible para el uso de huéspedes.
           </p>
@@ -314,7 +269,7 @@ export default function UsuarioDashboard() {
             </div>
             <Link
               href="/usuario/habitaciones"
-              className="inline-flex items-center space-x-2 bg-gradient-to-r from-rose-primary to-rose-accent hover:from-gold hover:to-rose-secondary text-white px-8 py-4 rounded-lg font-cormorant font-bold text-lg transition-all duration-300 shadow-lg hover:shadow-xl"
+              className="inline-flex items-center space-x-2 bg-gradient-to-r from-[#7B1D26] to-[#CA99AB] hover:from-[#D4AF37] hover:to-[#895A49] text-white px-8 py-4 rounded-lg font-cormorant font-bold text-lg transition-all duration-300 shadow-lg hover:shadow-xl"
             >
               <span>Explorar Más</span>
               <ArrowRight className="w-5 h-5" />
@@ -323,8 +278,9 @@ export default function UsuarioDashboard() {
         </div>
       </div>
 
-      {/* Featured Rooms */}
-      <div className="bg-cream py-16">
+      {/* 3. Featured Rooms */}
+      {/* CAMBIO: Fondo a un gris muy claro */}
+      <div className="bg-gray-100 py-16"> 
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-12">
             <h2 className="font-playfair text-4xl font-bold text-gray-800 mb-4">Habitaciones Destacadas</h2>
@@ -332,19 +288,20 @@ export default function UsuarioDashboard() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {featuredRooms.map((room) => (
+              // Las tarjetas de habitaciones ya estaban en blanco
               <div key={room.id} className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300">
                 <div className="relative h-64 overflow-hidden">
                   <img src={room.image} alt={room.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                   <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm px-4 py-2 rounded-full">
-                    <span className="font-cormorant font-bold text-rose-primary">${room.price.toLocaleString()}</span>
+                    <span className="font-cormorant font-bold text-[#7B1D26]">${room.price.toLocaleString()}</span>
                     <span className="font-inter text-xs text-gray-600">/noche</span>
                   </div>
                 </div>
                 <div className="p-6">
-                  <span className="font-inter text-xs text-rose-accent uppercase tracking-wide">{room.type}</span>
+                  <span className="font-inter text-xs text-[#CA99AB] uppercase tracking-wide">{room.type}</span>
                   <h3 className="font-playfair text-2xl font-bold text-gray-800 mt-2 mb-3">{room.name}</h3>
                   <p className="font-inter text-gray-600 mb-4">{room.description}</p>
-                  <button className="w-full bg-gradient-to-r from-rose-primary to-rose-accent text-white py-3 rounded-lg font-cormorant font-semibold hover:shadow-lg transition-shadow">
+                  <button className="w-full bg-gradient-to-r from-[#7B1D26] to-[#CA99AB] text-white py-3 rounded-lg font-cormorant font-semibold hover:shadow-lg transition-shadow">
                     Ver Detalles
                   </button>
                 </div>
@@ -354,8 +311,8 @@ export default function UsuarioDashboard() {
         </div>
       </div>
 
-      {/* Amenities */}
-      <div className="py-16 bg-gradient-to-br from-rose-primary via-rose-secondary to-rose-accent text-white">
+      {/* 4. Amenities (REVERTIDA: Volvemos al degradado original con texto blanco) */}
+      <div className="py-16 bg-gradient-to-br from-[#7B1D26] via-[#895A49] to-[#CA99AB] text-white">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-12">
             <h2 className="font-playfair text-4xl font-bold mb-4">Nuestras Amenidades</h2>
@@ -366,8 +323,9 @@ export default function UsuarioDashboard() {
               const Icon = amenity.icon;
               return (
                 <div key={index} className="bg-white/10 backdrop-blur-sm rounded-xl p-6 text-center hover:bg-white/20 transition-all duration-300 group">
-                  <Icon className="w-12 h-12 mx-auto mb-3 text-gold group-hover:scale-110 transition-transform" />
-                  <p className="font-cormorant font-semibold">{amenity.name}</p>
+                  {/* Íconos en Dorado para destacar */}
+                  <Icon className="w-12 h-12 mx-auto mb-3 text-[#D4AF37] group-hover:scale-110 transition-transform" /> 
+                  <p className="font-cormorant font-semibold text-white">{amenity.name}</p>
                 </div>
               );
             })}
@@ -375,10 +333,11 @@ export default function UsuarioDashboard() {
         </div>
       </div>
 
-      {/* CTA Final */}
-      <div className="py-20 bg-white">
+      {/* 5. CTA Final */}
+      {/* CAMBIO: Fondo a blanco/claro y texto a oscuro */}
+      <div className="py-20 bg-white"> 
         <div className="max-w-4xl mx-auto px-6 text-center">
-          <Flower className="w-16 h-16 text-gold mx-auto mb-6 animate-pulse" />
+          <Flower className="w-16 h-16 text-[#D4AF37] mx-auto mb-6 animate-pulse" />
           <h2 className="font-playfair text-4xl md:text-5xl font-bold text-gray-800 mb-4">
             ¿Listo para tu próxima experiencia?
           </h2>
@@ -387,7 +346,7 @@ export default function UsuarioDashboard() {
           </p>
           <Link
             href="/usuario/habitaciones"
-            className="inline-flex items-center space-x-3 bg-gradient-to-r from-rose-primary to-rose-accent hover:from-gold hover:to-rose-secondary text-white px-10 py-5 rounded-full font-cormorant font-bold text-xl shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105"
+            className="inline-flex items-center space-x-3 bg-gradient-to-r from-[#7B1D26] to-[#CA99AB] hover:from-[#D4AF37] hover:to-[#895A49] text-white px-10 py-5 rounded-full font-cormorant font-bold text-xl shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105"
           >
             <Calendar className="w-6 h-6" />
             <span>Reservar Ahora</span>
