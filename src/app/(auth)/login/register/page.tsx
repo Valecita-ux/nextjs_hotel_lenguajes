@@ -1,91 +1,76 @@
+// src/app/(auth)/register/page.tsx
 'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Mail, Lock, Eye, EyeOff, AlertCircle, Flower, Users } from '@/components/icons/Icons';
 
-// SVG Icons
-const Mail = ({ className }: { className?: string }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-    <polyline points="22,6 12,13 2,6"></polyline>
-  </svg>
-);
-
-const Lock = ({ className }: { className?: string }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <rect x="5" y="11" width="14" height="10" rx="2" ry="2"></rect>
-    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-  </svg>
-);
-
-const Eye = ({ className }: { className?: string }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-    <circle cx="12" cy="12" r="3"></circle>
-  </svg>
-);
-
-const EyeOff = ({ className }: { className?: string }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-    <line x1="1" y1="1" x2="23" y2="23"></line>
-  </svg>
-);
-
-const AlertCircle = ({ className }: { className?: string }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <circle cx="12" cy="12" r="10"></circle>
-    <line x1="12" y1="8" x2="12" y2="12"></line>
-    <line x1="12" y1="16" x2="12.01" y2="16"></line>
-  </svg>
-);
-
-const Flower = ({ className, style }: { className?: string; style?: React.CSSProperties }) => (
-  <svg className={className} style={style} fill="currentColor" viewBox="0 0 24 24">
-    <path d="M12 22c-1.1 0-2-.9-2-2v-2.17c-1.17-.41-2.2-1.09-3.07-1.97l-1.53.88c-.95.55-2.17.22-2.72-.73-.55-.95-.22-2.17.73-2.72l1.53-.88c-.29-.96-.46-1.96-.46-3 0-1.04.17-2.04.46-3l-1.53-.88c-.95-.55-1.28-1.77-.73-2.72.55-.95 1.77-1.28 2.72-.73l1.53.88c.87-.88 1.9-1.56 3.07-1.97V2c0-1.1.9-2 2-2s2 .9 2 2v2.17c1.17.41 2.2 1.09 3.07 1.97l1.53-.88c.95-.55 2.17-.22 2.72.73.55.95.22 2.17-.73 2.72l-1.53.88c.29.96.46 1.96.46 3 0 1.04-.17 2.04-.46 3l1.53.88c.95.55 1.28 1.77.73 2.72-.55.95-1.77 1.28-2.72.73l-1.53-.88c-.87.88-1.9 1.56-3.07 1.97V20c0 1.1-.9 2-2 2zm0-8c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3z"/>
-  </svg>
-);
-
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [formData, setFormData] = useState({ 
+    nombre: '', 
+    email: '', 
+    password: '',
+    confirmPassword: '' 
+  });
   const [error, setError] = useState('');
-  const [fieldErrors, setFieldErrors] = useState({ email: false, password: false });
+  const [fieldErrors, setFieldErrors] = useState({ 
+    nombre: false, 
+    email: false, 
+    password: false,
+    confirmPassword: false 
+  });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setFieldErrors({ email: false, password: false });
+    setFieldErrors({ nombre: false, email: false, password: false, confirmPassword: false });
+
+    // Validar que las contraseñas coincidan
+    if (formData.password !== formData.confirmPassword) {
+      setError('Las contraseñas no coinciden');
+      setFieldErrors({ ...fieldErrors, password: true, confirmPassword: true });
+      return;
+    }
+
+    // Validar longitud de contraseña
+    if (formData.password.length < 6) {
+      setError('La contraseña debe tener al menos 6 caracteres');
+      setFieldErrors({ ...fieldErrors, password: true });
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          nombre: formData.nombre,
+          email: formData.email,
+          password: formData.password
+        }),
       });
 
       const data = await response.json();
 
       if (data.success) {
+        // Auto-login después del registro
         localStorage.setItem('user', JSON.stringify(data.user));
-        router.push(data.redirectPath);
+        router.push('/usuario/dashboard');
       } else {
         setError(data.message);
-        if (data.message.toLowerCase().includes('email') || data.message.toLowerCase().includes('usuario')) {
-          setFieldErrors({ email: true, password: false });
-        } else if (data.message.toLowerCase().includes('contraseña')) {
-          setFieldErrors({ email: false, password: true });
-        } else {
-          setFieldErrors({ email: true, password: true });
+        if (data.message.toLowerCase().includes('email')) {
+          setFieldErrors({ ...fieldErrors, email: true });
         }
       }
     } catch (err) {
       setError('Error al conectar con el servidor');
-      setFieldErrors({ email: true, password: true });
     } finally {
       setLoading(false);
     }
@@ -106,7 +91,7 @@ export default function LoginPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-[#E4CDDD]/80 via-[#CA99AB]/70 to-[#895A49]/80 backdrop-blur-sm"></div>
       </div>
 
-      {/* Elementos decorativos asiáticos */}
+      {/* Elementos decorativos */}
       <div className="absolute top-20 left-20 w-32 h-32 rounded-full bg-[#D4AF37]/20 blur-3xl"></div>
       <div className="absolute bottom-20 right-20 w-40 h-40 rounded-full bg-[#7B1D26]/20 blur-3xl"></div>
       
@@ -128,11 +113,9 @@ export default function LoginPage() {
           
           {/* Panel izquierdo - Branding */}
           <div className="bg-gradient-to-br from-[#7B1D26] via-[#895A49] to-[#CA99AB] p-12 flex flex-col justify-center items-center text-white relative overflow-hidden">
-            {/* Círculos decorativos */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 border-4 border-white/20"></div>
             <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2 border-4 border-white/20"></div>
             
-            {/* Flores decorativas */}
             <div className="absolute top-10 left-10">
               <Flower className="w-12 h-12 text-white/20 animate-pulse" />
             </div>
@@ -141,7 +124,6 @@ export default function LoginPage() {
             </div>
             
             <div className="relative z-10 text-center">
-              {/* Logo */}
               <div className="mb-8 inline-block">
                 <div className="w-32 h-32 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center p-6 border-4 border-white/30 shadow-2xl">
                   <img
@@ -152,7 +134,6 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              {/* Nombre del hotel con fuente elegante */}
               <h1 className="font-playfair text-5xl font-bold mb-2 tracking-wide text-shadow-lg">
                 The Rose Garden
               </h1>
@@ -164,22 +145,21 @@ export default function LoginPage() {
               
               <h2 className="font-cormorant text-3xl font-semibold mb-6 italic">Hotel & Spa</h2>
               <p className="text-white/90 font-inter text-lg mb-8 max-w-sm mx-auto leading-relaxed">
-                Experimenta la elegancia asiática fusionada con el lujo contemporáneo
+                Únete a nuestra comunidad y disfruta de beneficios exclusivos
               </p>
 
-              {/* Features con iconos de flores */}
               <div className="space-y-3 text-left max-w-xs mx-auto">
                 <div className="flex items-center space-x-3 text-white/90">
                   <Flower className="w-5 h-5 text-[#D4AF37]" />
-                  <span className="font-inter text-sm">Habitaciones de lujo</span>
+                  <span className="font-inter text-sm">Descuentos especiales</span>
                 </div>
                 <div className="flex items-center space-x-3 text-white/90">
                   <Flower className="w-5 h-5 text-[#D4AF37]" />
-                  <span className="font-inter text-sm">Spa y tratamientos orientales</span>
+                  <span className="font-inter text-sm">Reservas prioritarias</span>
                 </div>
                 <div className="flex items-center space-x-3 text-white/90">
                   <Flower className="w-5 h-5 text-[#D4AF37]" />
-                  <span className="font-inter text-sm">Gastronomía internacional</span>
+                  <span className="font-inter text-sm">Programa de puntos</span>
                 </div>
               </div>
             </div>
@@ -193,11 +173,39 @@ export default function LoginPage() {
                   <Flower className="w-10 h-10 text-white" />
                 </div>
               </div>
-              <h3 className="font-playfair text-3xl font-bold text-gray-800 mb-2">Bienvenido</h3>
-              <p className="font-inter text-gray-500 text-sm">Ingresa tus credenciales para continuar</p>
+              <h3 className="font-playfair text-3xl font-bold text-gray-800 mb-2">Crear Cuenta</h3>
+              <p className="font-inter text-gray-500 text-sm">Completa tus datos para registrarte</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Nombre */}
+              <div>
+                <label htmlFor="nombre" className="block font-cormorant text-sm font-semibold text-gray-700 mb-2">
+                  Nombre Completo
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Users className={`h-5 w-5 ${fieldErrors.nombre ? 'text-red-400' : 'text-[#895A49]'}`} />
+                  </div>
+                  <input
+                    type="text"
+                    id="nombre"
+                    required
+                    className={`block w-full pl-10 pr-3 py-3 border text-gray-700 rounded-xl shadow-sm font-inter
+                             placeholder-gray-400 focus:outline-none focus:ring-2 transition-all duration-200
+                             ${fieldErrors.nombre 
+                               ? 'border-red-500 focus:ring-red-400 focus:border-red-500' 
+                               : 'border-[#E4CDDD] focus:ring-[#CA99AB] focus:border-[#CA99AB]'}`}
+                    value={formData.nombre}
+                    onChange={(e) => {
+                      setFormData({ ...formData, nombre: e.target.value });
+                      setFieldErrors({ ...fieldErrors, nombre: false });
+                    }}
+                    placeholder="Juan Pérez"
+                  />
+                </div>
+              </div>
+
               {/* Email */}
               <div>
                 <label htmlFor="email" className="block font-cormorant text-sm font-semibold text-gray-700 mb-2">
@@ -225,7 +233,7 @@ export default function LoginPage() {
                   />
                 </div>
                 {fieldErrors.email && (
-                  <p className="mt-1 text-xs text-red-600 font-inter">Por favor verifica tu correo electrónico</p>
+                  <p className="mt-1 text-xs text-red-600 font-inter">Este email ya está registrado</p>
                 )}
               </div>
 
@@ -252,7 +260,7 @@ export default function LoginPage() {
                       setFormData({ ...formData, password: e.target.value });
                       setFieldErrors({ ...fieldErrors, password: false });
                     }}
-                    placeholder="••••••••"
+                    placeholder="Mínimo 6 caracteres"
                   />
                   <button
                     type="button"
@@ -266,9 +274,45 @@ export default function LoginPage() {
                     )}
                   </button>
                 </div>
-                {fieldErrors.password && (
-                  <p className="mt-1 text-xs text-red-600 font-inter">Por favor verifica tu contraseña</p>
-                )}
+              </div>
+
+              {/* Confirm Password */}
+              <div>
+                <label htmlFor="confirmPassword" className="block font-cormorant text-sm font-semibold text-gray-700 mb-2">
+                  Confirmar Contraseña
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Lock className={`h-5 w-5 ${fieldErrors.confirmPassword ? 'text-red-400' : 'text-[#895A49]'}`} />
+                  </div>
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    id="confirmPassword"
+                    required
+                    className={`block w-full pl-10 pr-12 py-3 border text-gray-700 rounded-xl shadow-sm font-inter
+                             placeholder-gray-400 focus:outline-none focus:ring-2 transition-all duration-200
+                             ${fieldErrors.confirmPassword 
+                               ? 'border-red-500 focus:ring-red-400 focus:border-red-500' 
+                               : 'border-[#E4CDDD] focus:ring-[#CA99AB] focus:border-[#CA99AB]'}`}
+                    value={formData.confirmPassword}
+                    onChange={(e) => {
+                      setFormData({ ...formData, confirmPassword: e.target.value });
+                      setFieldErrors({ ...fieldErrors, confirmPassword: false });
+                    }}
+                    placeholder="Repite tu contraseña"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-5 w-5 text-gray-400 hover:text-[#895A49] transition-colors" />
+                    ) : (
+                      <Eye className="h-5 w-5 text-gray-400 hover:text-[#895A49] transition-colors" />
+                    )}
+                  </button>
+                </div>
               </div>
               
               {/* Error message */}
@@ -294,27 +338,27 @@ export default function LoginPage() {
                   {loading ? (
                     <>
                       <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      Ingresando...
+                      Registrando...
                     </>
                   ) : (
                     <>
                       <Flower className="w-5 h-5" />
-                      Ingresar
+                      Crear Cuenta
                     </>
                   )}
                 </span>
               </button>
             </form>
 
-            {/* Registro link */}
+            {/* Login link */}
             <div className="mt-6 text-center">
               <p className="font-inter text-sm text-gray-600">
-                ¿No tienes una cuenta?{' '}
+                ¿Ya tienes una cuenta?{' '}
                 <Link 
-                  href="/register" 
+                  href="/login" 
                   className="font-cormorant font-semibold text-[#7B1D26] hover:text-[#CA99AB] transition-colors underline decoration-[#D4AF37]"
                 >
-                  Regístrate aquí
+                  Inicia sesión aquí
                 </Link>
               </p>
             </div>

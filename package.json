@@ -29,6 +29,6 @@
     "typescript": "^5"
   },
   "prisma": {
-    "seed": "tsx prisma/seed.ts"
+    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
   }
 }
