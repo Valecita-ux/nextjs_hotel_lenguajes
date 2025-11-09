@@ -26,6 +26,26 @@ export async function GET(request: NextRequest) {
           include: {
             servicio: true
           }
+        },
+        spa: {
+          include: {
+            spa: true
+          }
+        },
+        actividades: {
+          include: {
+            actividad: true
+          }
+        },
+        paquetes: {
+          include: {
+            paquete: true
+          }
+        },
+        restaurante: {
+          include: {
+            restaurante: true
+          }
         }
       },
       orderBy: {
@@ -57,11 +77,11 @@ export async function POST(request: NextRequest) {
       fecha_inicio, 
       fecha_fin, 
       numero_huespedes,
-      servicios_seleccionados = [], // Array de { id_servicio, cantidad }
-      spa_ids = [],
-      deportes_ids = [],
-      turismo_ids = [],
-      restaurant_ids=[],
+      servicios_seleccionados = [],
+      spa_seleccionados = [],
+      actividades_seleccionadas = [],
+      paquetes_seleccionados = [],
+      restaurante_seleccionado = []
     } = body;
 
     // Validaciones básicas
@@ -169,20 +189,19 @@ export async function POST(request: NextRequest) {
       : Number(habitacion.precio);
     
     let precio_total = precioHabitacion * dias;
+    let desglose: any = {
+      precio_habitacion: precioHabitacion * dias,
+      dias: dias
+    };
 
     // Calcular precio de servicios adicionales
-    let precio_servicios = 0;
     if (servicios_seleccionados.length > 0) {
       const serviciosIds = servicios_seleccionados.map((s: any) => s.id_servicio);
       const servicios = await prisma.servicio.findMany({
-        where: {
-          id_servicio: {
-            in: serviciosIds
-          }
-        }
+        where: { id_servicio: { in: serviciosIds } }
       });
 
-      precio_servicios = servicios_seleccionados.reduce((total: number, item: any) => {
+      const precio_servicios = servicios_seleccionados.reduce((total: number, item: any) => {
         const servicio = servicios.find(s => s.id_servicio === item.id_servicio);
         if (servicio) {
           const precio = typeof servicio.precio_servicio === 'string' 
@@ -194,9 +213,98 @@ export async function POST(request: NextRequest) {
       }, 0);
 
       precio_total += precio_servicios;
+      desglose.precio_servicios = precio_servicios;
     }
 
-    // Crear la reserva con servicios en una transacción
+    // Calcular precio de spa
+    if (spa_seleccionados.length > 0) {
+      const spaIds = spa_seleccionados.map((s: any) => s.id_spa);
+      const spas = await prisma.spa.findMany({
+        where: { id_spa: { in: spaIds } }
+      });
+
+      const precio_spa = spa_seleccionados.reduce((total: number, item: any) => {
+        const spa = spas.find(s => s.id_spa === item.id_spa);
+        if (spa) {
+          const precio = typeof spa.costo_tramamiento === 'string' 
+            ? parseFloat(spa.costo_tramamiento) 
+            : Number(spa.costo_tramamiento);
+          return total + precio;
+        }
+        return total;
+      }, 0);
+
+      precio_total += precio_spa;
+      desglose.precio_spa = precio_spa;
+    }
+
+    // Calcular precio de actividades
+    if (actividades_seleccionadas.length > 0) {
+      const actividadesIds = actividades_seleccionadas.map((a: any) => a.id_actividad);
+      const actividades = await prisma.actividadDeportiva.findMany({
+        where: { id_actividad: { in: actividadesIds } }
+      });
+
+      const precio_actividades = actividades_seleccionadas.reduce((total: number, item: any) => {
+        const actividad = actividades.find(a => a.id_actividad === item.id_actividad);
+        if (actividad) {
+          const precio = typeof actividad.costo_actividad === 'string' 
+            ? parseFloat(actividad.costo_actividad) 
+            : Number(actividad.costo_actividad);
+          return total + precio;
+        }
+        return total;
+      }, 0);
+
+      precio_total += precio_actividades;
+      desglose.precio_actividades = precio_actividades;
+    }
+
+    // Calcular precio de paquetes
+    if (paquetes_seleccionados.length > 0) {
+      const paquetesIds = paquetes_seleccionados.map((p: any) => p.id_paquete);
+      const paquetes = await prisma.paqueteTuristico.findMany({
+        where: { id_paquete: { in: paquetesIds } }
+      });
+
+      const precio_paquetes = paquetes_seleccionados.reduce((total: number, item: any) => {
+        const paquete = paquetes.find(p => p.id_paquete === item.id_paquete);
+        if (paquete) {
+          const precio = typeof paquete.costo === 'string' 
+            ? parseFloat(paquete.costo) 
+            : Number(paquete.costo);
+          return total + precio;
+        }
+        return total;
+      }, 0);
+
+      precio_total += precio_paquetes;
+      desglose.precio_paquetes = precio_paquetes;
+    }
+
+    // Calcular precio de restaurante
+    if (restaurante_seleccionado.length > 0) {
+      const restauranteIds = restaurante_seleccionado.map((r: any) => r.id_restaurante);
+      const platos = await prisma.restaurante.findMany({
+        where: { id_restaurante: { in: restauranteIds } }
+      });
+
+      const precio_restaurante = restaurante_seleccionado.reduce((total: number, item: any) => {
+        const plato = platos.find(p => p.id_restaurante === item.id_restaurante);
+        if (plato) {
+          const precio = typeof plato.precio === 'string' 
+            ? parseFloat(plato.precio) 
+            : Number(plato.precio);
+          return total + (precio * item.cantidad);
+        }
+        return total;
+      }, 0);
+
+      precio_total += precio_restaurante;
+      desglose.precio_restaurante = precio_restaurante;
+    }
+
+    // Crear la reserva con todos los servicios en una transacción
     const nuevaReserva = await prisma.$transaction(async (tx) => {
       // Crear reserva
       const reserva = await tx.reserva.create({
@@ -211,13 +319,59 @@ export async function POST(request: NextRequest) {
         }
       });
 
-      // Agregar servicios si hay
+      // Agregar servicios hotel
       if (servicios_seleccionados.length > 0) {
         await tx.reservaXServicio.createMany({
           data: servicios_seleccionados.map((item: any) => ({
             id_reserva: reserva.id_reserva,
             id_servicio: item.id_servicio,
             cantidad: item.cantidad
+          }))
+        });
+      }
+
+      // Agregar spa
+      if (spa_seleccionados.length > 0) {
+        await tx.reservaXSpa.createMany({
+          data: spa_seleccionados.map((item: any) => ({
+            id_reserva: reserva.id_reserva,
+            id_spa: item.id_spa,
+            fecha_servicio: new Date(item.fecha_servicio)
+          }))
+        });
+      }
+
+      // Agregar actividades
+      if (actividades_seleccionadas.length > 0) {
+        await tx.reservaXActividad.createMany({
+          data: actividades_seleccionadas.map((item: any) => ({
+            id_reserva: reserva.id_reserva,
+            id_actividad: item.id_actividad,
+            fecha_actividad: new Date(item.fecha_actividad)
+          }))
+        });
+      }
+
+      // Agregar paquetes
+      if (paquetes_seleccionados.length > 0) {
+        await tx.reservaXPaqueteTuristico.createMany({
+          data: paquetes_seleccionados.map((item: any) => ({
+            id_reserva: reserva.id_reserva,
+            id_paquete: item.id_paquete
+          }))
+        });
+      }
+
+      // Agregar restaurante
+      if (restaurante_seleccionado.length > 0) {
+        await tx.reservaXRestaurante.createMany({
+          data: restaurante_seleccionado.map((item: any) => ({
+            id_reserva: reserva.id_reserva,
+            id_restaurante: item.id_restaurante,
+            cantidad: item.cantidad,
+            fecha_consumo: new Date(item.fecha_consumo),
+            horario_solicitado: item.horario_solicitado || null,
+            observaciones: item.observaciones || null
           }))
         });
       }
@@ -241,6 +395,26 @@ export async function POST(request: NextRequest) {
             include: {
               servicio: true
             }
+          },
+          spa: {
+            include: {
+              spa: true
+            }
+          },
+          actividades: {
+            include: {
+              actividad: true
+            }
+          },
+          paquetes: {
+            include: {
+              paquete: true
+            }
+          },
+          restaurante: {
+            include: {
+              restaurante: true
+            }
           }
         }
       });
@@ -250,11 +424,7 @@ export async function POST(request: NextRequest) {
       success: true,
       message: 'Reserva creada exitosamente',
       reserva: nuevaReserva,
-      desglose: {
-        precio_habitacion: precioHabitacion * dias,
-        precio_servicios: precio_servicios,
-        dias: dias
-      }
+      desglose
     });
 
   } catch (error) {
@@ -280,7 +450,6 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Verificar que la reserva existe y pertenece al usuario
     const reserva = await prisma.reserva.findUnique({
       where: { id_reserva: parseInt(reservaId) }
     });
@@ -299,7 +468,6 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Verificar que la reserva no haya comenzado
     const hoy = new Date();
     if (reserva.fecha_inicio <= hoy) {
       return NextResponse.json(
@@ -308,7 +476,6 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Cancelar la reserva
     await prisma.reserva.update({
       where: { id_reserva: parseInt(reservaId) },
       data: {

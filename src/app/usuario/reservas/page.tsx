@@ -6,8 +6,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Reserva } from '@/types';
 import { 
-  Calendar, Users, Bed, X, Check, Lock, Flower, AlertCircle, 
-  Star
+  Calendar, Users, Bed, X, Check, Lock, Flower, AlertCircle,
+  Star, Droplet, Dumbbell, Utensils
 } from '@/components/icons/Icons';
 
 export default function MisReservasPage() {
@@ -260,25 +260,98 @@ export default function MisReservasPage() {
                           </div>
                         </div>
 
-                        {/* Servicios adicionales */}
-                        {(reserva as any).servicios && (reserva as any).servicios.length > 0 && (
+                        {/* Servicios adicionales completos */}
+                        {(
+                          ((reserva as any).servicios && (reserva as any).servicios.length > 0) ||
+                          ((reserva as any).spa && (reserva as any).spa.length > 0) ||
+                          ((reserva as any).actividades && (reserva as any).actividades.length > 0) ||
+                          ((reserva as any).paquetes && (reserva as any).paquetes.length > 0) ||
+                          ((reserva as any).restaurante && (reserva as any).restaurante.length > 0)
+                        ) && (
                           <div className="mt-4 pt-4 border-t border-gray-200">
-                            <p className="font-inter text-sm font-semibold text-gray-700 mb-2">
-                              Servicios adicionales:
+                            <p className="font-inter text-sm font-semibold text-gray-700 mb-3">
+                              Servicios adicionales incluidos:
                             </p>
-                            <div className="flex flex-wrap gap-2">
-                              {(reserva as any).servicios.map((item: any) => (
-                                <span
-                                  key={item.id_servicio}
-                                  className="inline-flex items-center space-x-1 px-3 py-1 bg-gradient-to-r from-[#7B1D26]/10 to-[#CA99AB]/10 border border-[#CA99AB]/30 rounded-full text-xs font-inter"
-                                >
-                                  <Star className="w-3 h-3 text-[#D4AF37]" />
-                                  <span className="text-gray-700">
-                                    {item.servicio.nombre_servicio}
-                                    {item.cantidad > 1 && ` (x${item.cantidad})`}
-                                  </span>
-                                </span>
-                              ))}
+                            <div className="space-y-2">
+                              {/* Servicios Hotel */}
+                              {(reserva as any).servicios && (reserva as any).servicios.length > 0 && (
+                                <div>
+                                  <p className="font-inter text-xs text-gray-500 mb-1">Servicios del Hotel:</p>
+                                  <div className="flex flex-wrap gap-2">
+                                    {(reserva as any).servicios.map((item: any) => (
+                                      <span key={item.id_servicio}
+                                        className="inline-flex items-center space-x-1 px-3 py-1 bg-gradient-to-r from-[#7B1D26]/10 to-[#CA99AB]/10 border border-[#CA99AB]/30 rounded-full text-xs font-inter">
+                                        <Star className="w-3 h-3 text-[#D4AF37]" />
+                                        <span>{item.servicio.nombre_servicio}{item.cantidad > 1 && ` (x${item.cantidad})`}</span>
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Spa */}
+                              {(reserva as any).spa && (reserva as any).spa.length > 0 && (
+                                <div>
+                                  <p className="font-inter text-xs text-gray-500 mb-1">Spa & Wellness:</p>
+                                  <div className="flex flex-wrap gap-2">
+                                    {(reserva as any).spa.map((item: any) => (
+                                      <span key={item.id_spa}
+                                        className="inline-flex items-center space-x-1 px-3 py-1 bg-blue-50 border border-blue-200 rounded-full text-xs font-inter">
+                                        <Droplet className="w-3 h-3 text-blue-500" />
+                                        <span>{item.spa.nombre_tratamiento}</span>
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Actividades */}
+                              {(reserva as any).actividades && (reserva as any).actividades.length > 0 && (
+                                <div>
+                                  <p className="font-inter text-xs text-gray-500 mb-1">Actividades Deportivas:</p>
+                                  <div className="flex flex-wrap gap-2">
+                                    {(reserva as any).actividades.map((item: any) => (
+                                      <span key={item.id_actividad}
+                                        className="inline-flex items-center space-x-1 px-3 py-1 bg-green-50 border border-green-200 rounded-full text-xs font-inter">
+                                        <Dumbbell className="w-3 h-3 text-green-500" />
+                                        <span>{item.actividad.nombre_actividad}</span>
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Paquetes */}
+                              {(reserva as any).paquetes && (reserva as any).paquetes.length > 0 && (
+                                <div>
+                                  <p className="font-inter text-xs text-gray-500 mb-1">Paquetes Turísticos:</p>
+                                  <div className="flex flex-wrap gap-2">
+                                    {(reserva as any).paquetes.map((item: any) => (
+                                      <span key={item.id_paquete}
+                                        className="inline-flex items-center space-x-1 px-3 py-1 bg-purple-50 border border-purple-200 rounded-full text-xs font-inter">
+                                        <Calendar className="w-3 h-3 text-purple-500" />
+                                        <span>{item.paquete.nombre_paquete}</span>
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Restaurante */}
+                              {(reserva as any).restaurante && (reserva as any).restaurante.length > 0 && (
+                                <div>
+                                  <p className="font-inter text-xs text-gray-500 mb-1">Restaurante:</p>
+                                  <div className="flex flex-wrap gap-2">
+                                    {(reserva as any).restaurante.map((item: any) => (
+                                      <span key={item.id_restaurante}
+                                        className="inline-flex items-center space-x-1 px-3 py-1 bg-orange-50 border border-orange-200 rounded-full text-xs font-inter">
+                                        <Utensils className="w-3 h-3 text-orange-500" />
+                                        <span>{item.restaurante.nombre_plato}{item.cantidad > 1 && ` (x${item.cantidad})`}</span>
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           </div>
                         )}
