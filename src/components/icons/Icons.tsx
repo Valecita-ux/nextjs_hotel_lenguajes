@@ -190,14 +190,28 @@ export const X = ({ className }: { className?: string }) => (
   </svg>
 );
 
-export const Minus = ({className }: { className?: string}) => (
+export const Minus = ({ className }: { className?: string }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <line x1 ="5" y1 ="12" x2 ="19" y2 ="12"></line>
+    <line x1="5" y1="12" x2="19" y2="12"></line>
   </svg>
-)
+);
 
-export const Plus = ({className }: { className?: string}) => (
-   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <line x1="12" y1 ="5" x2= "12" y2="19"></line>
-   </svg>
-)
+export const Plus = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <line x1="12" y1="5" x2="12" y2="19"></line>
+    <line x1="5" y1="12" x2="19" y2="12"></line>
+  </svg>
+);
+
+export const Menu = ({ className }: { className?: string }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
+    </svg>
+);
+export const DollarSing = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <line x1="12" y1="1" x2="12" y2="23"></line>
+    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+  </svg>
+);

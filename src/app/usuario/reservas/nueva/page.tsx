@@ -510,6 +510,40 @@ export default function NuevaReservaPage() {
                 </div>
               )}
 
+              {/* Contenido de Deportes */}
+              {categoriaActiva === 'deportes' && (
+                <div className="space-y-3">
+                  {todosServicios.actividadesDeportivas.map((actividad: any) => {
+                    const seleccionado = actividadesSeleccionadas.find(a => a.id_actividad === actividad.id_actividad);
+                    const precio = typeof actividad.costo_actividad === 'string' ? parseFloat(actividad.costo_actividad) : actividad.costo_actividad;
+                    return (
+                      <div key={actividad.id_actividad} className={`border rounded-xl p-4 ${seleccionado ? 'border-green-500 bg-green-50' : 'border-gray-200'}`}>
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="flex-1">
+                            <h4 className="font-cormorant text-lg font-bold text-gray-800">{actividad.nombre_actividad}</h4>
+                            <p className="font-inter text-sm text-gray-600 mb-2">{actividad.descripcion}</p>
+                            <span className="font-inter text-sm font-semibold text-green-600">${precio.toLocaleString()}</span>
+                          </div>
+                          <button type="button" onClick={() => toggleActividad(actividad.id_actividad)}
+                            className={`ml-4 px-4 py-2 rounded-lg text-sm ${seleccionado ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`}>
+                            {seleccionado ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                          </button>
+                        </div>
+                        {seleccionado && (
+                          <div>
+                            <label className="block font-inter text-xs text-gray-600 mb-1">Fecha de la actividad</label>
+                            <input type="date" value={seleccionado.fecha_actividad} min={formData.fecha_inicio} max={formData.fecha_fin}
+                              onChange={(e) => actualizarFechaActividad(actividad.id_actividad, e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+
               
 
             
