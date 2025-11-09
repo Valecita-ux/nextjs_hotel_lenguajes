@@ -189,3 +189,15 @@ export const X = ({ className }: { className?: string }) => (
     <line x1="6" y1="6" x2="18" y2="18"></line>
   </svg>
 );
+
+export const Minus = ({className }: { className?: string}) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <line x1 ="5" y1 ="12" x2 ="19" y2 ="12"></line>
+  </svg>
+)
+
+export const Plus = ({className }: { className?: string}) => (
+   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <line x1="12" y1 ="5" x2= "12" y2="19"></line>
+   </svg>
+)

@@ -1,4 +1,3 @@
-//(mis reservas)
 // src/app/usuario/reservas/page.tsx
 'use client';
 
@@ -7,7 +6,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Reserva } from '@/types';
 import { 
-  Calendar, Users, Bed, X, Check, Lock, Flower, AlertCircle 
+  Calendar, Users, Bed, X, Check, Lock, Flower, AlertCircle, 
+  Star
 } from '@/components/icons/Icons';
 
 export default function MisReservasPage() {
@@ -259,6 +259,29 @@ export default function MisReservasPage() {
                             </span>
                           </div>
                         </div>
+
+                        {/* Servicios adicionales */}
+                        {(reserva as any).servicios && (reserva as any).servicios.length > 0 && (
+                          <div className="mt-4 pt-4 border-t border-gray-200">
+                            <p className="font-inter text-sm font-semibold text-gray-700 mb-2">
+                              Servicios adicionales:
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {(reserva as any).servicios.map((item: any) => (
+                                <span
+                                  key={item.id_servicio}
+                                  className="inline-flex items-center space-x-1 px-3 py-1 bg-gradient-to-r from-[#7B1D26]/10 to-[#CA99AB]/10 border border-[#CA99AB]/30 rounded-full text-xs font-inter"
+                                >
+                                  <Star className="w-3 h-3 text-[#D4AF37]" />
+                                  <span className="text-gray-700">
+                                    {item.servicio.nombre_servicio}
+                                    {item.cantidad > 1 && ` (x${item.cantidad})`}
+                                  </span>
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                       {/* Precio y acciones */}

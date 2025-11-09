@@ -6,8 +6,15 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Habitacion } from '@/types';
 import { 
-  Calendar, Users, AlertCircle, Check, ChevronLeft, Flower 
+  Calendar, Users, AlertCircle, Check, ChevronLeft, Flower, Star, Plus, Minus, X
 } from '@/components/icons/Icons';
+
+interface Servicio {
+  id_servicio: number;
+  nombre_servicio: string;
+  descripcion: string;
+  precio_servicio: number | string;
+}
 
 export default function NuevaReservaPage() {
   const router = useRouter();
@@ -16,10 +23,13 @@ export default function NuevaReservaPage() {
 
   const [user, setUser] = useState<any>(null);
   const [habitacion, setHabitacion] = useState<Habitacion | null>(null);
+  const [servicios, setServicios] = useState<Servicio[]>([]);
+  const [serviciosSeleccionados, setServiciosSeleccionados] = useState<Map<number, number>>(new Map());
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [mostrarServicios, setMostrarServicios] = useState(false);
 
   const [formData, setFormData] = useState({
     fecha_inicio: '',
@@ -36,31 +46,56 @@ export default function NuevaReservaPage() {
     }
 
     if (habitacionId) {
-      cargarHabitacion(habitacionId);
+      cargarDatos(habitacionId);
     }
   }, [habitacionId]);
 
-  const cargarHabitacion = async (id: string) => {
+  const cargarDatos = async (id: string) => {
     try {
-      const response = await fetch(`/api/habitaciones/${id}`);
-      const data = await response.json();
+      const [habitacionRes, serviciosRes] = await Promise.all([
+        fetch(`/api/habitaciones/${id}`),
+        fetch('/api/servicios')
+      ]);
 
-      if (data.success) {
-        setHabitacion(data.habitacion);
+      const habitacionData = await habitacionRes.json();
+      const serviciosData = await serviciosRes.json();
+
+      if (habitacionData.success) {
+        setHabitacion(habitacionData.habitacion);
         setFormData(prev => ({ 
           ...prev, 
           numero_huespedes: 1 
         }));
       }
+
+      if (serviciosData.success) {
+        setServicios(serviciosData.data.servicios);
+      }
     } catch (error) {
       console.error('Error:', error);
-      setError('Error al cargar la habitación');
+      setError('Error al cargar los datos');
     } finally {
       setLoading(false);
     }
   };
 
-  const calcularPrecioTotal = () => {
+  const agregarServicio = (servicioId: number) => {
+    const nuevaCantidad = (serviciosSeleccionados.get(servicioId) || 0) + 1;
+    setServiciosSeleccionados(new Map(serviciosSeleccionados.set(servicioId, nuevaCantidad)));
+  };
+
+  const quitarServicio = (servicioId: number) => {
+    const cantidadActual = serviciosSeleccionados.get(servicioId) || 0;
+    if (cantidadActual > 1) {
+      setServiciosSeleccionados(new Map(serviciosSeleccionados.set(servicioId, cantidadActual - 1)));
+    } else {
+      const nuevo = new Map(serviciosSeleccionados);
+      nuevo.delete(servicioId);
+      setServiciosSeleccionados(nuevo);
+    }
+  };
+
+  const calcularPrecioHabitacion = () => {
     if (!formData.fecha_inicio || !formData.fecha_fin || !habitacion) {
       return 0;
     }
@@ -76,6 +111,20 @@ export default function NuevaReservaPage() {
       : habitacion.precio;
 
     return precioHabitacion * dias;
+  };
+
+  const calcularPrecioServicios = () => {
+    let total = 0;
+    serviciosSeleccionados.forEach((cantidad, servicioId) => {
+      const servicio = servicios.find(s => s.id_servicio === servicioId);
+      if (servicio) {
+        const precio = typeof servicio.precio_servicio === 'string'
+          ? parseFloat(servicio.precio_servicio)
+          : servicio.precio_servicio;
+        total += precio * cantidad;
+      }
+    });
+    return total;
   };
 
   const calcularDias = () => {
@@ -94,12 +143,18 @@ export default function NuevaReservaPage() {
     setSubmitting(true);
 
     try {
+      // Convertir Map a array para el API
+      const servicios_seleccionados = Array.from(serviciosSeleccionados.entries()).map(
+        ([id_servicio, cantidad]) => ({ id_servicio, cantidad })
+      );
+
       const response = await fetch('/api/reservas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id_usuario: user.id,
           id_habitacion: habitacionId,
+          servicios_seleccionados,
           ...formData
         })
       });
@@ -121,14 +176,12 @@ export default function NuevaReservaPage() {
     }
   };
 
-  // Fecha mínima: mañana
   const getMinDate = () => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     return tomorrow.toISOString().split('T')[0];
   };
 
-  // Fecha mínima para check-out: un día después del check-in
   const getMinCheckoutDate = () => {
     if (!formData.fecha_inicio) return getMinDate();
     const checkIn = new Date(formData.fecha_inicio);
@@ -187,7 +240,9 @@ export default function NuevaReservaPage() {
     );
   }
 
-  const precioTotal = calcularPrecioTotal();
+  const precioHabitacion = calcularPrecioHabitacion();
+  const precioServicios = calcularPrecioServicios();
+  const precioTotal = precioHabitacion + precioServicios;
   const dias = calcularDias();
 
   return (
@@ -211,7 +266,7 @@ export default function NuevaReservaPage() {
       <div className="max-w-5xl mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Formulario */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 space-y-6">
             <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-8 shadow-lg">
               <h2 className="font-playfair text-2xl font-bold text-gray-800 mb-6">
                 Detalles de la Reserva
@@ -233,7 +288,6 @@ export default function NuevaReservaPage() {
                     value={formData.fecha_inicio}
                     onChange={(e) => {
                       setFormData({ ...formData, fecha_inicio: e.target.value });
-                      // Reset fecha_fin si es anterior a la nueva fecha_inicio
                       if (formData.fecha_fin && e.target.value >= formData.fecha_fin) {
                         setFormData({ ...formData, fecha_inicio: e.target.value, fecha_fin: '' });
                       }
@@ -316,6 +370,104 @@ export default function NuevaReservaPage() {
                 Al confirmar aceptas nuestros términos y condiciones
               </p>
             </form>
+
+            {/* Servicios adicionales */}
+            <div className="bg-white rounded-2xl p-8 shadow-lg">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="font-playfair text-2xl font-bold text-gray-800 flex items-center space-x-2">
+                    <Star className="w-6 h-6 text-[#D4AF37]" />
+                    <span>Servicios Adicionales</span>
+                  </h2>
+                  <p className="font-inter text-sm text-gray-600">Opcional - Mejora tu estadía</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMostrarServicios(!mostrarServicios)}
+                  className="px-4 py-2 bg-[#CA99AB] hover:bg-[#7B1D26] text-white rounded-lg font-inter text-sm transition-colors"
+                >
+                  {mostrarServicios ? 'Ocultar' : 'Ver Servicios'}
+                </button>
+              </div>
+
+              {mostrarServicios && (
+                <div className="space-y-3">
+                  {servicios.map((servicio) => {
+                    const cantidad = serviciosSeleccionados.get(servicio.id_servicio) || 0;
+                    const precio = typeof servicio.precio_servicio === 'string'
+                      ? parseFloat(servicio.precio_servicio)
+                      : servicio.precio_servicio;
+
+                    return (
+                      <div
+                        key={servicio.id_servicio}
+                        className={`border rounded-xl p-4 transition-all ${
+                          cantidad > 0
+                            ? 'border-[#7B1D26] bg-[#7B1D26]/5'
+                            : 'border-gray-200 hover:border-[#CA99AB]'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <h4 className="font-cormorant text-lg font-bold text-gray-800">
+                              {servicio.nombre_servicio}
+                            </h4>
+                            <p className="font-inter text-sm text-gray-600 mb-2">
+                              {servicio.descripcion}
+                            </p>
+                            <span className="font-inter text-sm font-semibold text-[#7B1D26]">
+                              ${precio.toLocaleString()}
+                            </span>
+                          </div>
+
+                          {cantidad === 0 ? (
+                            <button
+                              type="button"
+                              onClick={() => agregarServicio(servicio.id_servicio)}
+                              className="ml-4 px-4 py-2 bg-gradient-to-r from-[#7B1D26] to-[#CA99AB] text-white rounded-lg font-inter text-sm hover:shadow-lg transition-all flex items-center space-x-1"
+                            >
+                              <Plus className="w-4 h-4" />
+                              <span>Agregar</span>
+                            </button>
+                          ) : (
+                            <div className="ml-4 flex items-center space-x-2">
+                              <button
+                                type="button"
+                                onClick={() => quitarServicio(servicio.id_servicio)}
+                                className="w-8 h-8 bg-gray-200 hover:bg-gray-300 rounded-lg flex items-center justify-center transition-colors"
+                              >
+                                {cantidad === 1 ? <X className="w-4 h-4" /> : <Minus className="w-4 h-4" />}
+                              </button>
+                              <span className="font-cormorant text-lg font-bold text-gray-800 min-w-[2rem] text-center">
+                                {cantidad}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => agregarServicio(servicio.id_servicio)}
+                                className="w-8 h-8 bg-[#7B1D26] hover:bg-[#CA99AB] text-white rounded-lg flex items-center justify-center transition-colors"
+                              >
+                                <Plus className="w-4 h-4" />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {serviciosSeleccionados.size > 0 && (
+                <div className="mt-6 p-4 bg-gradient-to-br from-[#7B1D26]/10 to-[#CA99AB]/10 rounded-xl border border-[#CA99AB]/30">
+                  <p className="font-inter text-sm font-semibold text-gray-700 mb-2">
+                    Servicios seleccionados: {serviciosSeleccionados.size}
+                  </p>
+                  <p className="font-playfair text-2xl font-bold text-[#7B1D26]">
+                    Total servicios: ${precioServicios.toLocaleString()}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Resumen */}
@@ -350,16 +502,23 @@ export default function NuevaReservaPage() {
                   <span className="font-inter text-gray-800">{formData.numero_huespedes}</span>
                 </div>
 
-                {precioTotal > 0 && (
+                {precioHabitacion > 0 && (
                   <>
                     <div className="flex justify-between items-center pb-3 border-b border-gray-200">
-                      <span className="font-inter text-gray-600">Precio por noche:</span>
+                      <span className="font-inter text-gray-600">Habitación:</span>
                       <span className="font-inter text-gray-800">
-                        ${(typeof habitacion.precio === 'string' 
-                          ? parseFloat(habitacion.precio) 
-                          : habitacion.precio).toLocaleString()}
+                        ${precioHabitacion.toLocaleString()}
                       </span>
                     </div>
+
+                    {precioServicios > 0 && (
+                      <div className="flex justify-between items-center pb-3 border-b border-gray-200">
+                        <span className="font-inter text-gray-600">Servicios:</span>
+                        <span className="font-inter text-gray-800">
+                          ${precioServicios.toLocaleString()}
+                        </span>
+                      </div>
+                    )}
 
                     <div className="bg-gradient-to-br from-[#7B1D26]/10 to-[#CA99AB]/10 p-4 rounded-xl">
                       <div className="flex justify-between items-center">

@@ -21,7 +21,12 @@ export async function GET(request: NextRequest) {
       },
       include: {
         habitacion: true,
-        pagos: true
+        pagos: true,
+        servicios: {
+          include: {
+            servicio: true
+          }
+        }
       },
       orderBy: {
         fecha_inicio: 'desc'
@@ -51,7 +56,12 @@ export async function POST(request: NextRequest) {
       id_habitacion, 
       fecha_inicio, 
       fecha_fin, 
-      numero_huespedes 
+      numero_huespedes,
+      servicios_seleccionados = [], // Array de { id_servicio, cantidad }
+      spa_ids = [],
+      deportes_ids = [],
+      turismo_ids = [],
+      restaurant_ids=[],
     } = body;
 
     // Validaciones básicas
@@ -121,21 +131,18 @@ export async function POST(request: NextRequest) {
         estado_reserva: 'confirmada',
         OR: [
           {
-            // La nueva reserva comienza durante una reserva existente
             AND: [
               { fecha_inicio: { lte: inicio } },
               { fecha_fin: { gt: inicio } }
             ]
           },
           {
-            // La nueva reserva termina durante una reserva existente
             AND: [
               { fecha_inicio: { lt: fin } },
               { fecha_fin: { gte: fin } }
             ]
           },
           {
-            // La nueva reserva contiene completamente una reserva existente
             AND: [
               { fecha_inicio: { gte: inicio } },
               { fecha_fin: { lte: fin } }
@@ -155,43 +162,99 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calcular precio total
+    // Calcular precio de la habitación
     const dias = Math.ceil((fin.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24));
     const precioHabitacion = typeof habitacion.precio === 'string' 
       ? parseFloat(habitacion.precio) 
       : Number(habitacion.precio);
-    const precio_total = precioHabitacion * dias;
+    
+    let precio_total = precioHabitacion * dias;
 
-    // Crear la reserva
-    const nuevaReserva = await prisma.reserva.create({
-      data: {
-        id_usuario: parseInt(id_usuario),
-        id_habitaciones: parseInt(id_habitacion),
-        fecha_inicio: inicio,
-        fecha_fin: fin,
-        estado_reserva: 'confirmada',
-        precio_total: precio_total,
-        numero_huespedes: parseInt(numero_huespedes)
-      },
-      include: {
-        habitacion: true
-      }
-    });
+    // Calcular precio de servicios adicionales
+    let precio_servicios = 0;
+    if (servicios_seleccionados.length > 0) {
+      const serviciosIds = servicios_seleccionados.map((s: any) => s.id_servicio);
+      const servicios = await prisma.servicio.findMany({
+        where: {
+          id_servicio: {
+            in: serviciosIds
+          }
+        }
+      });
 
-    // Crear registro de pago pendiente
-    await prisma.pago.create({
-      data: {
-        id_reserva: nuevaReserva.id_reserva,
-        monto: precio_total,
-        metodo_pago: 'pendiente',
-        estado_pago: 'pendiente'
+      precio_servicios = servicios_seleccionados.reduce((total: number, item: any) => {
+        const servicio = servicios.find(s => s.id_servicio === item.id_servicio);
+        if (servicio) {
+          const precio = typeof servicio.precio_servicio === 'string' 
+            ? parseFloat(servicio.precio_servicio) 
+            : Number(servicio.precio_servicio);
+          return total + (precio * item.cantidad);
+        }
+        return total;
+      }, 0);
+
+      precio_total += precio_servicios;
+    }
+
+    // Crear la reserva con servicios en una transacción
+    const nuevaReserva = await prisma.$transaction(async (tx) => {
+      // Crear reserva
+      const reserva = await tx.reserva.create({
+        data: {
+          id_usuario: parseInt(id_usuario),
+          id_habitaciones: parseInt(id_habitacion),
+          fecha_inicio: inicio,
+          fecha_fin: fin,
+          estado_reserva: 'confirmada',
+          precio_total: precio_total,
+          numero_huespedes: parseInt(numero_huespedes)
+        }
+      });
+
+      // Agregar servicios si hay
+      if (servicios_seleccionados.length > 0) {
+        await tx.reservaXServicio.createMany({
+          data: servicios_seleccionados.map((item: any) => ({
+            id_reserva: reserva.id_reserva,
+            id_servicio: item.id_servicio,
+            cantidad: item.cantidad
+          }))
+        });
       }
+
+      // Crear registro de pago pendiente
+      await tx.pago.create({
+        data: {
+          id_reserva: reserva.id_reserva,
+          monto: precio_total,
+          metodo_pago: 'pendiente',
+          estado_pago: 'pendiente'
+        }
+      });
+
+      // Obtener reserva completa con relaciones
+      return await tx.reserva.findUnique({
+        where: { id_reserva: reserva.id_reserva },
+        include: {
+          habitacion: true,
+          servicios: {
+            include: {
+              servicio: true
+            }
+          }
+        }
+      });
     });
 
     return NextResponse.json({
       success: true,
       message: 'Reserva creada exitosamente',
-      reserva: nuevaReserva
+      reserva: nuevaReserva,
+      desglose: {
+        precio_habitacion: precioHabitacion * dias,
+        precio_servicios: precio_servicios,
+        dias: dias
+      }
     });
 
   } catch (error) {
