@@ -39,6 +39,7 @@ export interface ReservaFecha {
 }
 
 export interface Reserva {
+  pagos: any;
   id_reserva: number;
   id_usuario: number;
   id_habitaciones: number;
