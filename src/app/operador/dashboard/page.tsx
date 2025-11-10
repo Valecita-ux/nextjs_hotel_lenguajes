@@ -34,7 +34,7 @@ export default function OperadorDashboard() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="w-16 h-16 border-4 border-blue-500 border-t-blue-600 rounded-full animate-spin"></div>
+        <div className="w-16 h-16 border-4 border-[#3E0014] border-t-[#830d46] rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -42,7 +42,7 @@ export default function OperadorDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 pb-12">
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-cyan-600 text-white py-16 px-6">
+      <div className="relative bg-gradient-to-br from-[#3E0014] via-[#5B002C] to-[#7A002B] text-white py-16 px-6">
         <div className="max-w-7xl mx-auto">
           <h1 className="font-playfair text-5xl font-bold mb-4">Panel de Operador</h1>
           <p className="font-inter text-xl text-white/90">
@@ -57,7 +57,7 @@ export default function OperadorDashboard() {
           {/* Total Habitaciones */}
           <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all">
             <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+              <div className="w-12 h-12 bg-gradient-to-br from-[#7A002B] to-[#AC1634] rounded-full flex items-center justify-center">
                 <Bed className="w-6 h-6 text-white" />
               </div>
               <span className="text-xs font-inter text-gray-500 uppercase">Habitaciones</span>
@@ -66,10 +66,10 @@ export default function OperadorDashboard() {
               {estadisticas?.totalHabitaciones || 0}
             </p>
             <div className="flex items-center justify-between text-xs">
-              <p className="font-inter text-green-600">
+              <p className="font-inter text-[#E77291]">
                 ✓ {estadisticas?.habitacionesDisponibles || 0} disponibles
               </p>
-              <p className="font-inter text-red-600">
+              <p className="font-inter text-[#3E0014]">
                 {estadisticas?.habitacionesReservadas || 0} ocupadas
               </p>
             </div>
@@ -78,7 +78,7 @@ export default function OperadorDashboard() {
           {/* Reservas Activas */}
           <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all">
             <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center">
+              <div className="w-12 h-12 bg-gradient-to-br from-[#7A002B] to-[#AC1634] rounded-full flex items-center justify-center">
                 <Calendar className="w-6 h-6 text-white" />
               </div>
               <span className="text-xs font-inter text-gray-500 uppercase">Reservas</span>
@@ -86,7 +86,7 @@ export default function OperadorDashboard() {
             <p className="font-playfair text-4xl font-bold text-gray-800 mb-1">
               {estadisticas?.reservasActivas || 0}
             </p>
-            <p className="font-inter text-sm text-gray-600">
+            <p className="font-inter text-sm text-[#E77291]">
               Confirmadas ({estadisticas?.totalReservas || 0} totales)
             </p>
           </div>
@@ -94,7 +94,7 @@ export default function OperadorDashboard() {
           {/* Consultas Pendientes */}
           <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all">
             <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center">
+              <div className="w-12 h-12 bg-gradient-to-br from-[#7A002B] to-[#AC1634] rounded-full flex items-center justify-center">
                 <MessageSquare className="w-6 h-6 text-white" />
               </div>
               <span className="text-xs font-inter text-gray-500 uppercase">Consultas</span>
@@ -102,7 +102,7 @@ export default function OperadorDashboard() {
             <p className="font-playfair text-4xl font-bold text-gray-800 mb-1">
               {estadisticas?.consultasPendientes || 0}
             </p>
-            <p className="font-inter text-sm text-orange-600">
+            <p className="font-inter text-sm text-[#E77291]">
               Por responder ({estadisticas?.totalConsultas || 0} totales)
             </p>
           </div>
@@ -110,7 +110,7 @@ export default function OperadorDashboard() {
           {/* Pagos Pendientes */}
           <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all">
             <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center">
+              <div className="w-12 h-12 bg-gradient-to-br from-[#7A002B] to-[#AC1634] rounded-full flex items-center justify-center">
                 <DollarSign className="w-6 h-6 text-white" />
               </div>
               <span className="text-xs font-inter text-gray-500 uppercase">Pagos</span>
@@ -118,7 +118,7 @@ export default function OperadorDashboard() {
             <p className="font-playfair text-4xl font-bold text-gray-800 mb-1">
               {estadisticas?.pagosPendientes || 0}
             </p>
-            <p className="font-inter text-sm text-purple-600">
+            <p className="font-inter text-sm text-[#E77291]">
               Por procesar ({estadisticas?.totalPagos || 0} totales)
             </p>
           </div>
@@ -127,8 +127,8 @@ export default function OperadorDashboard() {
         {/* Acciones rápidas */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Link href="/operador/habitaciones"
-            className="group bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border-2 border-transparent hover:border-blue-500">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            className="group bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border-2 border-transparent hover:border-[#9D0D2F]">
+            <div className="w-16 h-16 bg-gradient-to-br from-[#3E0D1E] to-[#9D0D2F] rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
               <Bed className="w-8 h-8 text-white" />
             </div>
             <h3 className="font-playfair text-2xl font-bold text-gray-800 mb-2">
@@ -140,8 +140,8 @@ export default function OperadorDashboard() {
           </Link>
 
           <Link href="/operador/reservas"
-            className="group bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border-2 border-transparent hover:border-green-500">
-            <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            className="group bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border-2 border-transparent hover:border-[#B4204A]">
+            <div className="w-16 h-16 bg-gradient-to-br from-[#9D0D2F] to-[#B4204A] rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
               <Calendar className="w-8 h-8 text-white" />
             </div>
             <h3 className="font-playfair text-2xl font-bold text-gray-800 mb-2">
@@ -153,8 +153,8 @@ export default function OperadorDashboard() {
           </Link>
 
           <Link href="/operador/pagos"
-            className="group bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border-2 border-transparent hover:border-purple-500">
-            <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            className="group bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border-2 border-transparent hover:border-[#E87D87]">
+            <div className="w-16 h-16 bg-gradient-to-br from-[#B4204A] to-[#E87D87] rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
               <DollarSign className="w-8 h-8 text-white" />
             </div>
             <h3 className="font-playfair text-2xl font-bold text-gray-800 mb-2">
@@ -166,8 +166,8 @@ export default function OperadorDashboard() {
           </Link>
 
           <Link href="/operador/consultas"
-            className="group bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border-2 border-transparent hover:border-orange-500">
-            <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            className="group bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border-2 border-transparent hover:border-[#ECA59D]">
+            <div className="w-16 h-16 bg-gradient-to-br from-[#E87D87] to-[#ECA59D] rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
               <MessageSquare className="w-8 h-8 text-white" />
             </div>
             <h3 className="font-playfair text-2xl font-bold text-gray-800 mb-2">
@@ -180,57 +180,7 @@ export default function OperadorDashboard() {
         </div>
 
         {/* Actividad reciente */}
-        <div className="mt-12 bg-white rounded-2xl p-8 shadow-lg">
-          <h2 className="font-playfair text-2xl font-bold text-gray-800 mb-6">
-            Actividad Reciente
-          </h2>
-          <div className="space-y-4">
-            <div className="flex items-center space-x-4 p-4 bg-blue-50 rounded-xl">
-              <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-                <Check className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex-1">
-                <p className="font-inter text-sm font-semibold text-gray-800">
-                  Nueva reserva confirmada
-                </p>
-                <p className="font-inter text-xs text-gray-600">
-                  Habitación 301 - Check-in mañana
-                </p>
-              </div>
-              <span className="font-inter text-xs text-gray-500">Hace 2h</span>
-            </div>
-
-            <div className="flex items-center space-x-4 p-4 bg-yellow-50 rounded-xl">
-              <div className="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center flex-shrink-0">
-                <AlertCircle className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex-1">
-                <p className="font-inter text-sm font-semibold text-gray-800">
-                  Consulta sin responder
-                </p>
-                <p className="font-inter text-xs text-gray-600">
-                  Cliente pregunta sobre servicios de spa
-                </p>
-              </div>
-              <span className="font-inter text-xs text-gray-500">Hace 5h</span>
-            </div>
-
-            <div className="flex items-center space-x-4 p-4 bg-green-50 rounded-xl">
-              <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
-                <DollarSign className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex-1">
-                <p className="font-inter text-sm font-semibold text-gray-800">
-                  Pago procesado
-                </p>
-                <p className="font-inter text-xs text-gray-600">
-                  Reserva #1234 - $15,000
-                </p>
-              </div>
-              <span className="font-inter text-xs text-gray-500">Ayer</span>
-            </div>
-          </div>
-        </div>
+        
       </div>
     </div>
   );
