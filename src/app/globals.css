@@ -1,26 +1,28 @@
 @import "tailwindcss";
 
+/* Variables de fuentes */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --font-playfair: 'Playfair Display', serif;
+  --font-cormorant: 'Cormorant Garamond', serif;
+  --font-inter: 'Inter', sans-serif;
+  
+  /* Colores del hotel */
+  --rose-primary: #7B1D26;
+  --rose-secondary: #895A49;
+  --rose-accent: #CA99AB;
+  --rose-light: #E4CDDD;
+  --gold: #D4AF37;
+  --cream: #FFF8F0;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+.font-playfair {
+  font-family: var(--font-playfair);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.font-cormorant {
+  font-family: var(--font-cormorant);
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+.font-inter {
+  font-family: var(--font-inter);
 }
