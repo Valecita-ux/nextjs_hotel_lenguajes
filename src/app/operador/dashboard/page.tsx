@@ -65,9 +65,14 @@ export default function OperadorDashboard() {
             <p className="font-playfair text-4xl font-bold text-gray-800 mb-1">
               {estadisticas?.totalHabitaciones || 0}
             </p>
-            <p className="font-inter text-sm text-green-600">
-              {estadisticas?.habitacionesDisponibles || 0} disponibles
-            </p>
+            <div className="flex items-center justify-between text-xs">
+              <p className="font-inter text-green-600">
+                ✓ {estadisticas?.habitacionesDisponibles || 0} disponibles
+              </p>
+              <p className="font-inter text-red-600">
+                {estadisticas?.habitacionesReservadas || 0} ocupadas
+              </p>
+            </div>
           </div>
 
           {/* Reservas Activas */}
@@ -81,7 +86,9 @@ export default function OperadorDashboard() {
             <p className="font-playfair text-4xl font-bold text-gray-800 mb-1">
               {estadisticas?.reservasActivas || 0}
             </p>
-            <p className="font-inter text-sm text-gray-600">Activas hoy</p>
+            <p className="font-inter text-sm text-gray-600">
+              Confirmadas ({estadisticas?.totalReservas || 0} totales)
+            </p>
           </div>
 
           {/* Consultas Pendientes */}
@@ -95,7 +102,9 @@ export default function OperadorDashboard() {
             <p className="font-playfair text-4xl font-bold text-gray-800 mb-1">
               {estadisticas?.consultasPendientes || 0}
             </p>
-            <p className="font-inter text-sm text-orange-600">Por responder</p>
+            <p className="font-inter text-sm text-orange-600">
+              Por responder ({estadisticas?.totalConsultas || 0} totales)
+            </p>
           </div>
 
           {/* Pagos Pendientes */}
@@ -109,7 +118,9 @@ export default function OperadorDashboard() {
             <p className="font-playfair text-4xl font-bold text-gray-800 mb-1">
               {estadisticas?.pagosPendientes || 0}
             </p>
-            <p className="font-inter text-sm text-purple-600">Por procesar</p>
+            <p className="font-inter text-sm text-purple-600">
+              Por procesar ({estadisticas?.totalPagos || 0} totales)
+            </p>
           </div>
         </div>
 

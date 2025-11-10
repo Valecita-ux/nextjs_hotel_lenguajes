@@ -27,6 +27,7 @@ export const metadata: Metadata = {
   description: "Hotel boutique de lujo con estilo oriental y servicios excepcionales",
 };
 
+
 export default function RootLayout({
   children,
 }: {
