@@ -215,3 +215,12 @@ export const DollarSing = ({ className }: { className?: string }) => (
     <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
   </svg>
 );
+
+export const RefreshCw = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <polyline points="23 4 23 10 17 10"></polyline>
+    <polyline points="1 20 1 14 7 14"></polyline>
+    <path d="M3.5 13a9 9 0 0 1 17-5"></path>
+    <path d="M20.5 11a9 9 0 0 1-17 5"></path>
+  </svg>
+);
