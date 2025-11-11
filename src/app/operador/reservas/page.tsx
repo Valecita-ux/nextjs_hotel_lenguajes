@@ -96,7 +96,7 @@ export default function OperadorReservasPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="w-16 h-16 border-4 border-blue-500 border-t-blue-600 rounded-full animate-spin"></div>
+        <div className="w-16 h-16 border-4 border-[#3E0014] border-t-[#5B002C] rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -104,7 +104,7 @@ export default function OperadorReservasPage() {
   return (
     <div className="min-h-screen bg-gray-50 pb-12">
       {/* Header */}
-      <div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white py-12 px-6">
+      <div className="bg-gradient-to-r from-[#3E0014] to-[#830d46] text-white py-12 px-6">
         <div className="max-w-7xl mx-auto">
           <h1 className="font-playfair text-4xl font-bold mb-2">Gestión de Reservas</h1>
           <p className="font-inter text-lg text-white/90">

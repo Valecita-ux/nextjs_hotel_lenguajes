@@ -59,8 +59,7 @@ export default function OperadorConsultasPage() {
       // Simulación de datos si la respuesta está vacía (solo para demo)
       if (data.consultas.length === 0) {
         setConsultas([
-          { id_consulta: 101, nombre: 'Juan Pérez', correo: 'juan@example.com', mensaje: 'Hola, ¿tienen disponibilidad para el 15 de diciembre? Necesito dos habitaciones dobles.', estado: 'pendiente', fecha_consulta: new Date().toISOString(), respuesta: null },
-          { id_consulta: 102, nombre: 'Ana Gómez', correo: 'ana@example.com', mensaje: 'I need to know the price of the shuttle service from the airport. Thanks!', estado: 'pendiente', fecha_consulta: new Date(Date.now() - 86400000).toISOString(), respuesta: null },
+          
         ]);
       } else {
         setConsultas(data.consultas);
