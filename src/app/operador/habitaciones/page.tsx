@@ -90,7 +90,7 @@ export default function OperadorHabitacionesPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="w-16 h-16 border-4 border-blue-500 border-t-blue-600 rounded-full animate-spin"></div>
+        <div className="w-16 h-16 border-4 border-[#3E0014] border-t-[#5B002C] rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -98,7 +98,7 @@ export default function OperadorHabitacionesPage() {
   return (
     <div className="min-h-screen bg-gray-50 pb-12">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-12 px-6">
+      <div className="bg-gradient-to-r from-[#3E0014] to-[#830d46] text-white py-12 px-6">
         <div className="max-w-7xl mx-auto">
           <h1 className="font-playfair text-4xl font-bold mb-2">Mapa de Habitaciones</h1>
           <p className="font-inter text-lg text-white/90">
@@ -113,15 +113,15 @@ export default function OperadorHabitacionesPage() {
           <h3 className="font-inter text-sm font-semibold text-gray-700 mb-4">Leyenda:</h3>
           <div className="flex flex-wrap gap-6">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-green-500 rounded-lg border-2 border-green-600"></div>
+              <div className="w-8 h-8 bg-[#13e31d] rounded-lg border-2 border-[#0ea51f]"></div>
               <span className="font-inter text-sm text-gray-700">Disponible</span>
             </div>
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-red-500 rounded-lg border-2 border-red-600"></div>
+              <div className="w-8 h-8 bg-[#c50c0c] rounded-lg border-2 border-[#ca0b0b]"></div>
               <span className="font-inter text-sm text-gray-700">Reservado</span>
             </div>
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-yellow-500 rounded-lg border-2 border-yellow-600"></div>
+              <div className="w-8 h-8 bg-[#e7af21] rounded-lg border-2 border-[#dbb874]"></div>
               <span className="font-inter text-sm text-gray-700">Mantenimiento</span>
             </div>
           </div>
@@ -132,8 +132,8 @@ export default function OperadorHabitacionesPage() {
           <div key={piso} className="mb-8">
             <div className="bg-white rounded-2xl p-6 shadow-lg">
               <div className="flex items-center space-x-3 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
-                  <span className="font-playfair text-xl font-bold text-white">{piso}</span>
+                <div className="w-12 h-12 bg-gradient-to-br from-[#3E0014] to-[#830d46] rounded-full flex items-center justify-center">
+                  <span className="font-playfair text-x2 font-bold text-white">{piso}</span>
                 </div>
                 <div>
                   <h2 className="font-playfair text-2xl font-bold text-gray-800">
@@ -164,7 +164,7 @@ export default function OperadorHabitacionesPage() {
                         </span>
                         {reservaActual && (
                           <div className="absolute -top-2 -right-2 w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-lg">
-                            <Users className="w-3 h-3 text-blue-600" />
+                            <Users className="w-3 h-3 text-[#830d46]" />
                           </div>
                         )}
                       </div>
@@ -220,7 +220,7 @@ export default function OperadorHabitacionesPage() {
                 <div className="bg-gray-50 rounded-xl p-4">
                   <p className="font-inter text-xs text-gray-600 mb-1">Capacidad</p>
                   <div className="flex items-center space-x-2">
-                    <Users className="w-4 h-4 text-blue-600" />
+                    <Users className="w-4 h-4 text-[#830d46]" />
                     <span className="font-inter font-semibold text-gray-800">
                       {habitacionSeleccionada.cantidad_personas} personas
                     </span>
@@ -236,17 +236,17 @@ export default function OperadorHabitacionesPage() {
 
               {/* Reserva actual */}
               {habitacionSeleccionada.reservas[0] && (
-                <div className="bg-blue-50 border-l-4 border-blue-500 rounded-xl p-4">
-                  <p className="font-inter text-sm font-semibold text-blue-900 mb-2">
+                <div className="bg-[#f7e6e9] border-l-4 border-[#7A002B] rounded-xl p-4">
+                  <p className="font-inter text-sm font-semibold text-[#7A002B] mb-2">
                     Reserva Actual:
                   </p>
-                  <p className="font-inter text-sm text-blue-800">
+                  <p className="font-inter text-sm text-[#AC1634]">
                     <strong>Cliente:</strong> {habitacionSeleccionada.reservas[0].usuario.nombre}
                   </p>
-                  <p className="font-inter text-sm text-blue-800">
+                  <p className="font-inter text-sm text-[#AC1634]">
                     <strong>Check-in:</strong> {new Date(habitacionSeleccionada.reservas[0].fecha_inicio).toLocaleDateString('es-AR')}
                   </p>
-                  <p className="font-inter text-sm text-blue-800">
+                  <p className="font-inter text-sm text-[#AC1634]">
                     <strong>Check-out:</strong> {new Date(habitacionSeleccionada.reservas[0].fecha_fin).toLocaleDateString('es-AR')}
                   </p>
                 </div>
@@ -262,19 +262,19 @@ export default function OperadorHabitacionesPage() {
                 <button
                   onClick={() => cambiarEstado('disponible')}
                   disabled={cambiandoEstado || habitacionSeleccionada.estado === 'disponible'}
-                  className="flex flex-col items-center space-y-2 p-4 bg-green-50 hover:bg-green-100 border-2 border-green-500 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex flex-col items-center space-y-2 p-4 bg-[#f7edef] hover:bg-[#f5e1e5] border-2 border-[#D38C9D] rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Check className="w-6 h-6 text-green-600" />
-                  <span className="font-inter text-sm font-semibold text-green-700">Disponible</span>
+                  <Check className="w-6 h-6 text-[#D38C9D]" />
+                  <span className="font-inter text-sm font-semibold text-[#D38C9D]">Disponible</span>
                 </button>
 
                 <button
                   onClick={() => cambiarEstado('reservado')}
                   disabled={cambiandoEstado || habitacionSeleccionada.estado === 'reservado'}
-                  className="flex flex-col items-center space-y-2 p-4 bg-red-50 hover:bg-red-100 border-2 border-red-500 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex flex-col items-center space-y-2 p-4 bg-[#f2dbe3] hover:bg-[#eac9d5] border-2 border-[#cd7091] rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <X className="w-6 h-6 text-red-600" />
-                  <span className="font-inter text-sm font-semibold text-red-700">Reservado</span>
+                  <X className="w-6 h-6 text-[#9b385d]" />
+                  <span className="font-inter text-sm font-semibold text-[#aa4568]">Reservado</span>
                 </button>
 
                 <button

@@ -1,4 +1,3 @@
-// src/app/operador/layout.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -8,6 +7,13 @@ import {
   Home, Bed, Calendar, MessageSquare, LogOut, Menu, X, 
   Users, Star, DollarSing
 } from '@/components/icons/Icons';
+
+// Códigos de la nueva paleta:
+// Rustic Red: #3E0014 (Darkest - Sidebar/Top End)
+// Tyrian Purple: #5B002C (Dark - Sidebar Start/Mobile Header)
+// Burgundy: #7A002B (Accent - Top Bar Middle)
+// Cardinal: #AC1634 (Vibrant - Hover/Logout)
+// Deep Blush: #E77291 (Light - N/A in this layout)
 
 const DollarSign = ({ className }: { className?: string }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -24,6 +30,7 @@ export default function OperadorLayout({ children }: { children: React.ReactNode
   const router = useRouter();
 
   useEffect(() => {
+    // Usando localStorage - Nota: Para un entorno de producción, es mejor usar cookies o un sistema de Auth más robusto.
     const userData = localStorage.getItem('user');
     if (userData) {
       const parsedUser = JSON.parse(userData);
@@ -59,12 +66,12 @@ export default function OperadorLayout({ children }: { children: React.ReactNode
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Top Bar */}
-      <div className="h-3 bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-500"></div>
+      {/* Top Bar - Usamos un gradiente con los tres tonos más oscuros */}
+      <div className="h-3 bg-gradient-to-r from-[#7A002B] via-[#5B002C] to-[#3E0014]"></div>
 
       {/* Desktop Sidebar */}
       <aside
-        className={`hidden lg:flex lg:flex-col bg-gradient-to-b from-blue-600 to-blue-800 text-white shadow-2xl transition-all duration-300 ease-in-out ${
+        className={`hidden lg:flex lg:flex-col bg-gradient-to-b from-[#5B002C] to-[#3E0014] text-white shadow-2xl transition-all duration-300 ease-in-out ${
           isExpanded ? 'lg:w-64' : 'lg:w-20'
         } rounded-r-3xl fixed left-0 top-3 bottom-0 z-40`}
         onMouseEnter={() => setIsExpanded(true)}
@@ -134,7 +141,8 @@ export default function OperadorLayout({ children }: { children: React.ReactNode
           <button
             type="button"
             onClick={handleLogout}
-            className={`w-full flex items-center px-3 py-3 text-white/70 hover:bg-red-500/20 hover:text-white rounded-xl transition-all duration-200 group relative ${
+            // Utilizamos el color Cardinal (#AC1634) para el hover del botón de Logout
+            className={`w-full flex items-center px-3 py-3 text-white/70 hover:bg-[#AC1634]/20 hover:text-white rounded-xl transition-all duration-200 group relative ${
               !isExpanded && 'justify-center'
             }`}
             title={!isExpanded ? 'Cerrar sesión' : undefined}
@@ -154,7 +162,7 @@ export default function OperadorLayout({ children }: { children: React.ReactNode
       </aside>
 
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-3 left-0 right-0 bg-gradient-to-r from-blue-600 to-blue-800 shadow-md z-50 mx-4 rounded-xl">
+      <div className="lg:hidden fixed top-3 left-0 right-0 bg-gradient-to-r from-[#5B002C] to-[#3E0014] shadow-md z-50 mx-4 rounded-xl">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center p-2">
@@ -180,7 +188,7 @@ export default function OperadorLayout({ children }: { children: React.ReactNode
           className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
           onClick={() => setIsMobileMenuOpen(false)}
         >
-          <div className="fixed left-0 top-20 bottom-0 w-64 bg-gradient-to-b from-blue-600 to-blue-800 text-white shadow-lg rounded-r-3xl" onClick={(e) => e.stopPropagation()}>
+          <div className="fixed left-0 top-20 bottom-0 w-64 bg-gradient-to-b from-[#5B002C] to-[#3E0014] text-white shadow-lg rounded-r-3xl" onClick={(e) => e.stopPropagation()}>
             <nav className="p-4 space-y-2">
               {menuItems.map(({ id, label, icon: Icon, href }) => {
                 const active = isActive(href);
@@ -215,7 +223,8 @@ export default function OperadorLayout({ children }: { children: React.ReactNode
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="w-full flex items-center px-4 py-3 text-white/70 hover:bg-red-500/20 hover:text-white rounded-xl transition-all duration-200"
+                  // Utilizamos el color Cardinal (#AC1634) para el hover del botón de Logout
+                  className="w-full flex items-center px-4 py-3 text-white/70 hover:bg-[#AC1634]/20 hover:text-white rounded-xl transition-all duration-200"
                 >
                   <LogOut className="w-5 h-5 mr-3" />
                   <span className="font-inter font-medium">Cerrar sesión</span>
