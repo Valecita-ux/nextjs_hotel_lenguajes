@@ -367,7 +367,7 @@ export default function AdminOperadoresPage() {
                   <th className="px-6 py-4 text-left font-inter text-sm font-semibold">Correo</th>
                   <th className="px-6 py-4 text-left font-inter text-sm font-semibold">Rol</th>
                   <th className="px-6 py-4 text-left font-inter text-sm font-semibold">Fecha Registro</th>
-                  <th className="px-6 py-4 text-left font-inter text-sm font-semibold">Actividad</th>
+                  
                   <th className="px-6 py-4 text-left font-inter text-sm font-semibold">Acciones</th>
                 </tr>
               </thead>
@@ -410,11 +410,7 @@ export default function AdminOperadoresPage() {
                           {new Date(usuario.createdAt).toLocaleDateString('es-AR')}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center space-x-3 text-xs text-gray-600">
-                          <span>{usuario._count?.consultas || 0} consultas</span>
-                        </div>
-                      </td>
+                     
                       <td className="px-6 py-4">
                         <div className="flex items-center space-x-2">
                           <button
