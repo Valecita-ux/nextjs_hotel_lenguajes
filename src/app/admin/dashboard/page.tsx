@@ -58,18 +58,37 @@ const COLORS = ['#E91E63', '#F06292', '#FF4081', '#EC407A', '#F48FB1'];
 
 export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true);
-  const [periodo, setPeriodo] = useState('30');
   const [estadisticas, setEstadisticas] = useState<any>(null);
   const [graficos, setGraficos] = useState<any>(null);
+  const [fechaInicio, setFechaInicio] = useState('');
+  const [fechaFin, setFechaFin] = useState('');
 
   useEffect(() => {
-    cargarEstadisticas();
-  }, [periodo]);
+    // Establecer fechas por defecto (último mes)
+    const hoy = new Date();
+    const haceUnMes = new Date();
+    haceUnMes.setMonth(haceUnMes.getMonth() - 1);
+
+    setFechaFin(hoy.toISOString().split('T')[0]);
+    setFechaInicio(haceUnMes.toISOString().split('T')[0]);
+  }, []);
+
+  useEffect(() => {
+    if (fechaInicio && fechaFin) {
+      cargarEstadisticas();
+    }
+  }, [fechaInicio, fechaFin]);
 
   const cargarEstadisticas = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/admin/estadisticas?periodo=${periodo}`);
+      
+      // Calcular días de diferencia
+      const inicio = new Date(fechaInicio);
+      const fin = new Date(fechaFin);
+      const diferenciaDias = Math.ceil((fin.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24));
+      
+      const response = await fetch(`/api/admin/estadisticas?periodo=${diferenciaDias}`);
       const data = await response.json();
 
       if (data.success) {
@@ -112,15 +131,22 @@ export default function AdminDashboardPage() {
               </p>
             </div>
             <div className="mt-4 md:mt-0 flex items-center space-x-4">
-              <select
-                value={periodo}
-                onChange={(e) => setPeriodo(e.target.value)}
-                className="px-4 py-2 rounded-xl bg-white text-gray-800 font-inter text-sm focus:outline-none focus:ring-2 focus:ring-pink-300"
-              >
-                <option value="7">Últimos 7 días</option>
-                <option value="30">Últimos 30 días</option>
-                <option value="90">Últimos 90 días</option>
-              </select>
+              <div className="flex items-center space-x-2">
+                <Calendar className="w-5 h-5 text-white" />
+                <input
+                  type="date"
+                  value={fechaInicio}
+                  onChange={(e) => setFechaInicio(e.target.value)}
+                  className="px-4 py-2 rounded-xl bg-white text-gray-800 font-inter text-sm focus:outline-none focus:ring-2 focus:ring-pink-300"
+                />
+                <span className="text-white">hasta</span>
+                <input
+                  type="date"
+                  value={fechaFin}
+                  onChange={(e) => setFechaFin(e.target.value)}
+                  className="px-4 py-2 rounded-xl bg-white text-gray-800 font-inter text-sm focus:outline-none focus:ring-2 focus:ring-pink-300"
+                />
+              </div>
               <button
                 onClick={cargarEstadisticas}
                 className="px-4 py-2 bg-white text-pink-600 rounded-xl hover:bg-pink-50 transition-colors flex items-center space-x-2"
@@ -284,7 +310,10 @@ export default function AdminDashboardPage() {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ payload }) => `${payload.tipo}: ${payload.cantidad}`}
+                  label={(entry) => {
+                    const payload = (entry as any).payload;
+                    return `${payload?.tipo}: ${payload?.cantidad}`;
+                  }}
                   outerRadius={100}
                   fill="#8884d8"
                   dataKey="cantidad"
