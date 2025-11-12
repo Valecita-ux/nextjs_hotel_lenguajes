@@ -310,7 +310,7 @@ export default function AdminReportesPage() {
           </div>
 
           <div class="seccion">
-            <div class="seccion-titulo"> Top 10 Clientes VIP</div>
+            <div class="seccion-titulo"> Top 10 Clientes</div>
             <table>
               <thead>
                 <tr>
@@ -335,15 +335,7 @@ export default function AdminReportesPage() {
             </table>
           </div>
 
-          <div class="seccion">
-            <div class="seccion-titulo"> Ocupación Mensual (Últimos 6 Meses)</div>
-            ${reportes.ocupacionPorMes.map((item: any) => `
-              <div class="lista-item">
-                <span><strong>${item.mes}</strong></span>
-                <span style="color: #7B1D26; font-weight: bold; font-size: 16px;">${item.ocupacion}% ocupación</span>
-              </div>
-            `).join('')}
-          </div>
+          
 
           <div class="seccion">
             <div class="seccion-titulo"> Servicios Más Solicitados</div>
@@ -356,7 +348,7 @@ export default function AdminReportesPage() {
           </div>
 
           <div class="seccion">
-            <div class="seccion-titulo">🏃 Actividades Más Reservadas</div>
+            <div class="seccion-titulo" Actividades Más Reservadas</div>
             ${reportes.actividadesMasReservadas.map((actividad: any, idx: number) => `
               <div class="lista-item">
                 <span><span class="numero">${idx + 1}</span> <strong>${actividad.nombre}</strong></span>
@@ -551,27 +543,7 @@ export default function AdminReportesPage() {
         </div>
 
         {/* Ocupación por Mes */}
-        <div className="bg-white rounded-2xl p-6 shadow-lg mb-8">
-          <h3 className="font-playfair text-xl font-bold text-gray-800 mb-4">
-            Tasa de Ocupación (Últimos 6 Meses)
-          </h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={reportes.ocupacionPorMes}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="mes" tick={{ fontSize: 12 }} stroke="#999" />
-              <YAxis tick={{ fontSize: 12 }} stroke="#999" />
-              <Tooltip formatter={(value: any) => `${value}%`} />
-              <Line
-                type="monotone"
-                dataKey="ocupacion"
-                stroke="#E91E63"
-                strokeWidth={3}
-                dot={{ fill: '#E91E63', r: 5 }}
-                activeDot={{ r: 7 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+        
 
         {/* Top 10 Clientes */}
         <div className="bg-white rounded-2xl p-6 shadow-lg mb-8">
