@@ -1,294 +1,343 @@
-// src/app/api/admin/reportes/route.ts
+// src/app/api/admin/operadores/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-
+// Se elimina la importación de bcryptjs
+export const dynamic = 'force-dynamic';
+// GET - Obtener todos los operadores
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const fechaInicio = searchParams.get('fecha_inicio');
-    const fechaFin = searchParams.get('fecha_fin');
-    const tipo = searchParams.get('tipo'); // 'habitacion', 'usuario', 'periodo'
+    const rol = searchParams.get('rol');
 
-    // Construir filtros de fecha
-    const whereReserva: any = {};
-    const wherePago: any = { estado_pago: 'completado' };
-
-    if (fechaInicio && fechaFin) {
-      whereReserva.createdAt = {
-        gte: new Date(fechaInicio),
-        lte: new Date(fechaFin)
-      };
-      wherePago.fecha_pago = {
-        gte: new Date(fechaInicio),
-        lte: new Date(fechaFin)
-      };
-    }
-
-    // 1. Reporte de Ingresos por Método de Pago
-    const ingresosPorMetodo = await prisma.pago.groupBy({
-      by: ['metodo_pago'],
-      where: wherePago,
-      _sum: {
-        monto: true
-      },
-      _count: true
-    });
-
-    // 2. Reporte de Reservas por Tipo de Habitación
-    const reservasPorTipo = await prisma.reserva.groupBy({
-      by: ['id_habitaciones'],
-      where: whereReserva,
-      _count: true
-    });
-
-    const reservasPorTipoDetalle = await Promise.all(
-      reservasPorTipo.map(async (item) => {
-        const habitacion = await prisma.habitacion.findUnique({
-          where: { id_habitaciones: item.id_habitaciones }
-        });
-        return {
-          tipo: habitacion?.tipo || 'desconocido',
-          cantidad: item._count
-        };
-      })
-    );
-
-    // Agrupar por tipo
-    const tiposAgrupados = reservasPorTipoDetalle.reduce((acc: any, item) => {
-      if (!acc[item.tipo]) {
-        acc[item.tipo] = 0;
+    // Construir filtros - operadores y administradores
+    const where: any = {
+      rol: {
+        in: rol === 'todos' || !rol 
+          ? ['operador', 'administrador'] 
+          : [rol]
       }
-      acc[item.tipo] += item.cantidad;
-      return acc;
-    }, {});
+    };
 
-    const reservasPorTipoFinal = Object.entries(tiposAgrupados).map(([tipo, cantidad]) => ({
-      tipo,
-      cantidad
-    }));
-
-    // 3. Top 10 Clientes (más reservas)
-    const topClientes = await prisma.reserva.groupBy({
-      by: ['id_usuario'],
-      where: whereReserva,
-      _count: true,
-      orderBy: {
-        _count: {
-          id_usuario: 'desc'
-        }
-      },
-      take: 10
-    });
-
-    const topClientesDetalle = await Promise.all(
-      topClientes.map(async (item) => {
-        const usuario = await prisma.usuario.findUnique({
-          where: { id_usuario: item.id_usuario },
-          select: {
-            nombre: true,
-            correo: true
-          }
-        });
-
-        // Calcular total gastado
-        const pagos = await prisma.pago.findMany({
-          where: {
-            reserva: {
-              id_usuario: item.id_usuario
-            },
-            estado_pago: 'completado',
-            ...(fechaInicio && fechaFin ? {
-              fecha_pago: {
-                gte: new Date(fechaInicio),
-                lte: new Date(fechaFin)
-              }
-            } : {})
-          }
-        });
-
-        const totalGastado = pagos.reduce((sum, p) => sum + Number(p.monto), 0);
-
-        return {
-          nombre: usuario?.nombre || 'Usuario desconocido',
-          correo: usuario?.correo || '',
-          reservas: item._count,
-          totalGastado
-        };
-      })
-    );
-
-    // 4. Ocupación promedio por mes (últimos 6 meses)
-    const ocupacionPorMes = [];
-    for (let i = 5; i >= 0; i--) {
-      const fecha = new Date();
-      fecha.setMonth(fecha.getMonth() - i);
-      const mes = fecha.getMonth();
-      const anio = fecha.getFullYear();
-
-      const primerDia = new Date(anio, mes, 1);
-      const ultimoDia = new Date(anio, mes + 1, 0);
-
-      const reservas = await prisma.reserva.findMany({
-        where: {
-          OR: [
-            {
-              fecha_inicio: {
-                gte: primerDia,
-                lte: ultimoDia
-              }
-            },
-            {
-              fecha_fin: {
-                gte: primerDia,
-                lte: ultimoDia
-              }
-            },
-            {
-              AND: [
-                { fecha_inicio: { lte: primerDia } },
-                { fecha_fin: { gte: ultimoDia } }
-              ]
-            }
-          ],
-          estado_reserva: 'confirmada'
-        }
-      });
-
-      const totalHabitaciones = await prisma.habitacion.count();
-      const diasMes = ultimoDia.getDate();
-      const tasaOcupacion = totalHabitaciones > 0
-        ? (reservas.length / (totalHabitaciones * diasMes)) * 100 * diasMes
-        : 0;
-
-      ocupacionPorMes.push({
-        mes: fecha.toLocaleDateString('es-AR', { month: 'short', year: 'numeric' }),
-        ocupacion: Math.min(tasaOcupacion, 100).toFixed(1)
-      });
-    }
-
-    // 5. Servicios más solicitados
-    const serviciosMasSolicitados = await prisma.reservaXServicio.groupBy({
-      by: ['id_servicio'],
-      _sum: {
-        cantidad: true
-      },
-      _count: true,
-      orderBy: {
-        _count: {
-          id_servicio: 'desc'
-        }
-      },
-      take: 5
-    });
-
-    const serviciosDetalle = await Promise.all(
-      serviciosMasSolicitados.map(async (item) => {
-        const servicio = await prisma.servicio.findUnique({
-          where: { id_servicio: item.id_servicio }
-        });
-        return {
-          nombre: servicio?.nombre_servicio || 'Servicio desconocido',
-          cantidad: item._sum.cantidad || 0,
-          veces: item._count
-        };
-      })
-    );
-
-    // 6. Actividades más reservadas
-    const actividadesMasReservadas = await prisma.reservaXActividad.groupBy({
-      by: ['id_actividad'],
-      _count: true,
-      orderBy: {
-        _count: {
-          id_actividad: 'desc'
-        }
-      },
-      take: 5
-    });
-
-    const actividadesDetalle = await Promise.all(
-      actividadesMasReservadas.map(async (item) => {
-        const actividad = await prisma.actividadDeportiva.findUnique({
-          where: { id_actividad: item.id_actividad }
-        });
-        return {
-          nombre: actividad?.nombre_actividad || 'Actividad desconocida',
-          reservas: item._count
-        };
-      })
-    );
-
-    // 7. Duración promedio de estadías
-    const reservasConDuracion = await prisma.reserva.findMany({
-      where: whereReserva,
+    const usuarios = await prisma.usuario.findMany({
+      where,
       select: {
-        fecha_inicio: true,
-        fecha_fin: true
+        id_usuario: true,
+        nombre: true,
+        correo: true,
+        rol: true,
+        createdAt: true,
+        updatedAt: true,
+        _count: {
+          select: {
+            reservas: true,
+            comentarios: true,
+            consultas: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
       }
     });
 
-    const duraciones = reservasConDuracion.map(r => {
-      const inicio = new Date(r.fecha_inicio);
-      const fin = new Date(r.fecha_fin);
-      return Math.ceil((fin.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24));
-    });
-
-    const duracionPromedio = duraciones.length > 0
-      ? (duraciones.reduce((sum, d) => sum + d, 0) / duraciones.length).toFixed(1)
-      : 0;
-
-    // 8. Tasa de cancelación
-    const totalReservas = await prisma.reserva.count({ where: whereReserva });
-    const reservasCanceladas = await prisma.reserva.count({
-      where: {
-        ...whereReserva,
-        estado_reserva: 'cancelada'
-      }
-    });
-
-    const tasaCancelacion = totalReservas > 0
-      ? ((reservasCanceladas / totalReservas) * 100).toFixed(1)
-      : 0;
-
-    // 9. Ingresos totales del periodo
-    const ingresosTotales = ingresosPorMetodo.reduce(
-      (sum, item) => sum + Number(item._sum.monto || 0),
-      0
-    );
-
-    // 10. Promedio de ingresos por reserva
-    const promedioIngresosPorReserva = totalReservas > 0
-      ? (ingresosTotales / totalReservas).toFixed(2)
-      : 0;
+    // Estadísticas
+    const totalUsuarios = usuarios.length;
+    const operadores = usuarios.filter(u => u.rol === 'operador').length;
+    const administradores = usuarios.filter(u => u.rol === 'administrador').length;
 
     return NextResponse.json({
       success: true,
-      reportes: {
-        ingresosPorMetodo: ingresosPorMetodo.map(item => ({
-          metodo: item.metodo_pago,
-          ingresos: Number(item._sum.monto || 0),
-          cantidad: item._count
-        })),
-        reservasPorTipo: reservasPorTipoFinal,
-        topClientes: topClientesDetalle,
-        ocupacionPorMes,
-        serviciosMasSolicitados: serviciosDetalle,
-        actividadesMasReservadas: actividadesDetalle,
-        metricas: {
-          duracionPromedio: parseFloat(duracionPromedio as string),
-          tasaCancelacion: parseFloat(tasaCancelacion as string),
-          ingresosTotales,
-          promedioIngresosPorReserva: parseFloat(promedioIngresosPorReserva as string),
-          totalReservas,
-          reservasCanceladas
-        }
+      usuarios,
+      estadisticas: {
+        total: totalUsuarios,
+        operadores,
+        administradores
       }
     });
 
   } catch (error) {
-    console.error('Error al generar reportes:', error);
+    console.error('Error al obtener usuarios:', error);
     return NextResponse.json(
-      { success: false, message: 'Error al generar reportes' },
+      { success: false, message: 'Error al obtener usuarios' },
+      { status: 500 }
+    );
+  }
+}
+
+// ---
+// POST - Crear nuevo operador/administrador
+// *** NO USA ENCRIPTACIÓN ***
+// ---
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { nombre, correo, contraseña, rol } = body;
+
+    // Validaciones
+    if (!nombre || !correo || !contraseña || !rol) {
+      return NextResponse.json(
+        { success: false, message: 'Faltan campos requeridos' },
+        { status: 400 }
+      );
+    }
+
+    // Validar rol
+    const rolesValidos = ['operador', 'administrador'];
+    if (!rolesValidos.includes(rol)) {
+      return NextResponse.json(
+        { success: false, message: 'Rol inválido. Debe ser "operador" o "administrador"' },
+        { status: 400 }
+      );
+    }
+
+    // Validar formato de correo
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(correo)) {
+      return NextResponse.json(
+        { success: false, message: 'Formato de correo inválido' },
+        { status: 400 }
+      );
+    }
+
+    // Verificar que el correo no exista
+    const existente = await prisma.usuario.findUnique({
+      where: { correo }
+    });
+
+    if (existente) {
+      return NextResponse.json(
+        { success: false, message: 'El correo ya está registrado' },
+        { status: 400 }
+      );
+    }
+
+    // Validar contraseña (mínimo 6 caracteres)
+    if (contraseña.length < 6) {
+      return NextResponse.json(
+        { success: false, message: 'La contraseña debe tener al menos 6 caracteres' },
+        { status: 400 }
+      );
+    }
+
+    // *** MODIFICACIÓN: Guardar la contraseña sin encriptar ***
+    const contraseñaGuardada = contraseña;
+
+    // Crear usuario
+    const nuevoUsuario = await prisma.usuario.create({
+      data: {
+        nombre,
+        correo,
+        contraseña: contraseñaGuardada, // Contraseña simple
+        rol
+      },
+      select: {
+        id_usuario: true,
+        nombre: true,
+        correo: true,
+        rol: true,
+        createdAt: true
+      }
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: `${rol === 'operador' ? 'Operador' : 'Administrador'} creado exitosamente`,
+      usuario: nuevoUsuario
+    });
+
+  } catch (error) {
+    console.error('Error al crear usuario:', error);
+    return NextResponse.json(
+      { success: false, message: 'Error al crear usuario' },
+      { status: 500 }
+    );
+  }
+}
+
+// ---
+// PUT - Actualizar operador/administrador
+// *** NO USA ENCRIPTACIÓN ***
+// ---
+export async function PUT(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { id_usuario, nombre, correo, contraseña, rol } = body;
+
+    if (!id_usuario) {
+      return NextResponse.json(
+        { success: false, message: 'ID de usuario requerido' },
+        { status: 400 }
+      );
+    }
+
+    // Verificar que el usuario existe
+    const usuarioExistente = await prisma.usuario.findUnique({
+      where: { id_usuario: parseInt(id_usuario) }
+    });
+
+    if (!usuarioExistente) {
+      return NextResponse.json(
+        { success: false, message: 'Usuario no encontrado' },
+        { status: 404 }
+      );
+    }
+
+    // No permitir editar usuarios con rol "usuario" (clientes)
+    if (usuarioExistente.rol === 'usuario') {
+      return NextResponse.json(
+        { success: false, message: 'No se pueden editar usuarios clientes desde esta sección' },
+        { status: 400 }
+      );
+    }
+
+    // Si se cambia el correo, verificar que no exista
+    if (correo && correo !== usuarioExistente.correo) {
+      const correoExistente = await prisma.usuario.findUnique({
+        where: { correo }
+      });
+
+      if (correoExistente) {
+        return NextResponse.json(
+          { success: false, message: 'El correo ya está registrado' },
+          { status: 400 }
+        );
+      }
+
+      // Validar formato
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(correo)) {
+        return NextResponse.json(
+          { success: false, message: 'Formato de correo inválido' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Validar rol si se proporciona
+    if (rol) {
+      const rolesValidos = ['operador', 'administrador'];
+      if (!rolesValidos.includes(rol)) {
+        return NextResponse.json(
+          { success: false, message: 'Rol inválido' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Construir objeto de actualización
+    const dataToUpdate: any = {};
+    if (nombre) dataToUpdate.nombre = nombre;
+    if (correo) dataToUpdate.correo = correo;
+    if (rol) dataToUpdate.rol = rol;
+
+    // Si se proporciona contraseña, guardar sin encriptar
+    if (contraseña) {
+      if (contraseña.length < 6) {
+        return NextResponse.json(
+          { success: false, message: 'La contraseña debe tener al menos 6 caracteres' },
+          { status: 400 }
+        );
+      }
+      // *** MODIFICACIÓN: Guardar la contraseña sin encriptar ***
+      dataToUpdate.contraseña = contraseña;
+    }
+
+    // Actualizar usuario
+    const usuarioActualizado = await prisma.usuario.update({
+      where: { id_usuario: parseInt(id_usuario) },
+      data: dataToUpdate,
+      select: {
+        id_usuario: true,
+        nombre: true,
+        correo: true,
+        rol: true,
+        updatedAt: true
+      }
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: 'Usuario actualizado exitosamente',
+      usuario: usuarioActualizado
+    });
+
+  } catch (error) {
+    console.error('Error al actualizar usuario:', error);
+    return NextResponse.json(
+      { success: false, message: 'Error al actualizar usuario' },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE - Eliminar operador/administrador
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: 'ID de usuario requerido' },
+        { status: 400 }
+      );
+    }
+
+    // Verificar que el usuario existe
+    const usuario = await prisma.usuario.findUnique({
+      where: { id_usuario: parseInt(id) },
+      include: {
+        reservas: {
+          where: {
+            estado_reserva: 'confirmada',
+            fecha_fin: {
+              gte: new Date()
+            }
+          }
+        }
+      }
+    });
+
+    if (!usuario) {
+      return NextResponse.json(
+        { success: false, message: 'Usuario no encontrado' },
+        { status: 404 }
+      );
+    }
+
+    // No permitir eliminar usuarios con rol "usuario" (clientes)
+    if (usuario.rol === 'usuario') {
+      return NextResponse.json(
+        { success: false, message: 'No se pueden eliminar usuarios clientes desde esta sección' },
+        { status: 400 }
+      );
+    }
+
+    // Verificar que no tenga reservas activas (si fuera cliente)
+    if (usuario.reservas.length > 0) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          message: 'No se puede eliminar un usuario con reservas activas' 
+        },
+        { status: 400 }
+      );
+    }
+
+    // Eliminar usuario
+    await prisma.usuario.delete({
+      where: { id_usuario: parseInt(id) }
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: 'Usuario eliminado exitosamente'
+    });
+
+  } catch (error) {
+    console.error('Error al eliminar usuario:', error);
+    return NextResponse.json(
+      { success: false, message: 'Error al eliminar usuario' },
       { status: 500 }
     );
   }

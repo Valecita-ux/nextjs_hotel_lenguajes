@@ -1,7 +1,7 @@
 // src/app/api/admin/operadores/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import bcrypt from 'bcryptjs';
+// Se eliminó la importación de bcryptjs
 
 // GET - Obtener todos los operadores
 export async function GET(request: NextRequest) {
@@ -116,15 +116,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Encriptar contraseña
-    const hashedPassword = await bcrypt.hash(contraseña, 10);
+    // *** MODIFICADO: Guardar la contraseña sin encriptar ***
+    // const hashedPassword = await bcrypt.hash(contraseña, 10); // Línea original de encriptación
 
     // Crear usuario
     const nuevoUsuario = await prisma.usuario.create({
       data: {
         nombre,
         correo,
-        contraseña: hashedPassword,
+        contraseña: contraseña, // Contraseña simple
         rol
       },
       select: {
@@ -224,7 +224,7 @@ export async function PUT(request: NextRequest) {
     if (correo) dataToUpdate.correo = correo;
     if (rol) dataToUpdate.rol = rol;
 
-    // Si se proporciona contraseña, encriptarla
+    // Si se proporciona contraseña, guardarla sin encriptar
     if (contraseña) {
       if (contraseña.length < 6) {
         return NextResponse.json(
@@ -232,7 +232,8 @@ export async function PUT(request: NextRequest) {
           { status: 400 }
         );
       }
-      dataToUpdate.contraseña = await bcrypt.hash(contraseña, 10);
+      // dataToUpdate.contraseña = await bcrypt.hash(contraseña, 10); // Línea original de encriptación
+      dataToUpdate.contraseña = contraseña; // CAMBIO: Asignamos la contraseña simple
     }
 
     // Actualizar usuario
