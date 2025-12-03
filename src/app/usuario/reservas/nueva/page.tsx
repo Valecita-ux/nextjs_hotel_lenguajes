@@ -616,7 +616,7 @@ export default function NuevaReservaPage() {
                                   <div className="grid grid-cols-3 gap-3 pt-3 border-t border-gray-200">
                                     <div>
                                       <label className="block font-inter text-xs text-gray-600 mb-1">Cantidad</label>
-                                      <input type="number" min="1" value={seleccionado.cantidad}
+                                      <input type="number" min="4" value={seleccionado.cantidad}
                                         onChange={(e) => actualizarRestaurante(plato.id_restaurante, 'cantidad', parseInt(e.target.value))}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" />
                                     </div>

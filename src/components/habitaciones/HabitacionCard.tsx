@@ -11,10 +11,10 @@ interface HabitacionCardProps {
 
 // Imágenes por tipo de habitación
 const imagenesPorTipo: Record<string, string> = {
-  simple: '/images/habitacion-hotel.jpeg',
-  doble: '/images/habitacion-hotel2.jpeg',
-  suite: '/images/habitacion-hotel3.jpeg',
-  deluxe: '/images/habitacion-hotel.jpeg'
+  simple: '/images/habitacion-simple.jpeg',
+  doble: '/images/habitacion-doble.jpeg',
+  suite: '/images/habitacion-suite.jpeg',
+  deluxe: '/images/habitacion-deluxe.jpeg'
 };
 
 // Badges de estado

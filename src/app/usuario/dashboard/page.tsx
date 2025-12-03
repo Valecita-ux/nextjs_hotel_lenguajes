@@ -280,36 +280,7 @@ export default function UsuarioDashboard() {
 
       {/* 3. Featured Rooms */}
       {/* CAMBIO: Fondo a un gris muy claro */}
-      <div className="bg-gray-100 py-16"> 
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-12">
-            <h2 className="font-playfair text-4xl font-bold text-gray-800 mb-4">Habitaciones Destacadas</h2>
-            <p className="font-inter text-gray-600">Descubre nuestras suites más populares</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {featuredRooms.map((room) => (
-              // Las tarjetas de habitaciones ya estaban en blanco
-              <div key={room.id} className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300">
-                <div className="relative h-64 overflow-hidden">
-                  <img src={room.image} alt={room.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                  <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm px-4 py-2 rounded-full">
-                    <span className="font-cormorant font-bold text-[#7B1D26]">${room.price.toLocaleString()}</span>
-                    <span className="font-inter text-xs text-gray-600">/noche</span>
-                  </div>
-                </div>
-                <div className="p-6">
-                  <span className="font-inter text-xs text-[#CA99AB] uppercase tracking-wide">{room.type}</span>
-                  <h3 className="font-playfair text-2xl font-bold text-gray-800 mt-2 mb-3">{room.name}</h3>
-                  <p className="font-inter text-gray-600 mb-4">{room.description}</p>
-                  <button className="w-full bg-gradient-to-r from-[#7B1D26] to-[#CA99AB] text-white py-3 rounded-lg font-cormorant font-semibold hover:shadow-lg transition-shadow">
-                    Ver Detalles
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      
 
       {/* 4. Amenities (REVERTIDA: Volvemos al degradado original con texto blanco) */}
       <div className="py-16 bg-gradient-to-br from-[#7B1D26] via-[#895A49] to-[#CA99AB] text-white">

@@ -13,24 +13,28 @@ import {
 // Mapeo de imágenes por tipo
 const galeriaImagenes: Record<string, string[]> = {
   simple: [
-    '/images/habitacion-hotel.jpeg',
-    '/images/habitacion-hotel2.jpeg',
-    '/images/habitacion-hotel3.jpeg'
+    '/images/habitacion-simple.jpeg',
+    '/images/sala-simple.jpg',
+    '/images/baño-simple.jpg',
+    '/images/decoracion-simple.jpg'
   ],
   doble: [
-    '/images/habitacion-hotel2.jpeg',
-    '/images/habitacion-hotel.jpeg',
-    '/images/habitacion-hotel3.jpeg'
+    '/images/habitacion-doble.jpeg',
+    '/images/sala-doble.jpg',
+    '/images/baño-doble.jpg',
+    '/images/decoracion-doble.jpg'
   ],
   suite: [
-    '/images/habitacion-hotel3.jpeg',
-    '/images/habitacion-hotel.jpeg',
-    '/images/habitacion-hotel2.jpeg'
+    '/images/habitacion-suite.jpeg',
+    '/images/sala-doble.jpeg',
+    '/images/baño-doble.jpg',
+    '/images/decoracion-doble.jpg'
   ],
   deluxe: [
-    '/images/habitacion-hotel.jpeg',
-    '/images/habitacion-hotel3.jpeg',
-    '/images/habitacion-hotel2.jpeg'
+    '/images/habitacion-deluxe.jpeg',
+    '/images/sala-deluxe.jpg',
+    '/images/baño-deluxe.jpg',
+    '/images/decoracion-deluxe.jpg'
   ]
 };
 
