@@ -96,6 +96,7 @@ export async function GET(request: NextRequest) {
 }
 
 // PATCH - Procesar pago
+
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
@@ -117,34 +118,83 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    // Generar número de transacción si se completa el pago
-    const numero_transaccion = estado_pago === 'completado' 
-      ? `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`
-      : null;
-
-    // Actualizar pago
-    const pago = await prisma.pago.update({
+    // Obtener el pago con su reserva y habitación
+    const pagoExistente = await prisma.pago.findUnique({
       where: { id_pago: parseInt(id_pago) },
-      data: {
-        estado_pago,
-        metodo_pago: metodo_pago || 'pendiente',
-        numero_transaccion,
-        fecha_pago: estado_pago === 'completado' ? new Date() : undefined
-      },
       include: {
         reserva: {
           include: {
-            usuario: true,
             habitacion: true
           }
         }
       }
     });
 
+    if (!pagoExistente) {
+      return NextResponse.json(
+        { success: false, message: 'Pago no encontrado' },
+        { status: 404 }
+      );
+    }
+
+    // Generar número de transacción si se completa el pago
+    const numero_transaccion = estado_pago === 'completado' 
+      ? `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`
+      : null;
+
+    // Actualizar pago Y estado de habitación en una transacción
+    const resultado = await prisma.$transaction(async (tx) => {
+      // Actualizar pago
+      const pago = await tx.pago.update({
+        where: { id_pago: parseInt(id_pago) },
+        data: {
+          estado_pago,
+          metodo_pago: metodo_pago || 'pendiente',
+          numero_transaccion,
+          fecha_pago: estado_pago === 'completado' ? new Date() : undefined
+        },
+        include: {
+          reserva: {
+            include: {
+              usuario: true,
+              habitacion: true
+            }
+          }
+        }
+      });
+
+      // Si el pago se completa, cambiar estado de habitación a reservado
+      if (estado_pago === 'completado' && pago.reserva.habitacion.estado === 'disponible') {
+        await tx.habitacion.update({
+          where: { id_habitaciones: pago.reserva.id_habitaciones },
+          data: { estado: 'reservado' }
+        });
+      }
+
+      // Si el pago falla, liberar la habitación y cancelar reserva
+      if (estado_pago === 'fallido') {
+        // Cancelar la reserva
+        await tx.reserva.update({
+          where: { id_reserva: pago.id_reserva },
+          data: { estado_reserva: 'cancelada' }
+        });
+
+        // Liberar habitación si estaba reservada
+        if (pago.reserva.habitacion.estado === 'reservado') {
+          await tx.habitacion.update({
+            where: { id_habitaciones: pago.reserva.id_habitaciones },
+            data: { estado: 'disponible' }
+          });
+        }
+      }
+
+      return pago;
+    });
+
     return NextResponse.json({
       success: true,
-      message: 'Pago actualizado correctamente',
-      pago
+      message: `Pago ${estado_pago === 'completado' ? 'completado' : estado_pago === 'fallido' ? 'marcado como fallido' : 'actualizado'} correctamente`,
+      pago: resultado
     });
 
   } catch (error) {

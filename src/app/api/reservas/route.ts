@@ -1,8 +1,8 @@
-// src/app/api/reservas/route.ts
+// src/app/api/reservas/route.ts - ACTUALIZADO
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-// GET - Obtener reservas del usuario
+// GET - Obtener reservas del usuario (sin cambios)
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Crear nueva reserva
+// POST - Crear nueva reserva CON SOPORTE PARA PAGO DIRECTO
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -81,7 +81,9 @@ export async function POST(request: NextRequest) {
       spa_seleccionados = [],
       actividades_seleccionadas = [],
       paquetes_seleccionados = [],
-      restaurante_seleccionado = []
+      restaurante_seleccionado = [],
+      pagar_ahora = false,  // NUEVO: indica si el cliente paga ahora
+      metodo_pago = 'pendiente'  // NUEVO: método de pago seleccionado
     } = body;
 
     // Validaciones básicas
@@ -376,21 +378,43 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      // Crear registro de pago pendiente
-      await tx.pago.create({
-        data: {
-          id_reserva: reserva.id_reserva,
-          monto: precio_total,
-          metodo_pago: 'pendiente',
-          estado_pago: 'pendiente'
-        }
-      });
+      // NUEVO: Crear pago según si paga ahora o no
+      if (pagar_ahora) {
+        // Cliente paga ahora - crear pago completado
+        await tx.pago.create({
+          data: {
+            id_reserva: reserva.id_reserva,
+            monto: precio_total,
+            metodo_pago: metodo_pago,
+            estado_pago: 'completado',
+            fecha_pago: new Date(),
+            numero_transaccion: `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`
+          }
+        });
+
+        // NUEVO: Cambiar estado de habitación a reservado
+        await tx.habitacion.update({
+          where: { id_habitaciones: parseInt(id_habitacion) },
+          data: { estado: 'reservado' }
+        });
+      } else {
+        // Operador procesará el pago - crear pago pendiente
+        await tx.pago.create({
+          data: {
+            id_reserva: reserva.id_reserva,
+            monto: precio_total,
+            metodo_pago: 'pendiente',
+            estado_pago: 'pendiente'
+          }
+        });
+      }
 
       // Obtener reserva completa con relaciones
       return await tx.reserva.findUnique({
         where: { id_reserva: reserva.id_reserva },
         include: {
           habitacion: true,
+          pagos: true,
           servicios: {
             include: {
               servicio: true
@@ -422,7 +446,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Reserva creada exitosamente',
+      message: pagar_ahora 
+        ? 'Reserva creada y pago procesado exitosamente' 
+        : 'Reserva creada exitosamente',
       reserva: nuevaReserva,
       desglose
     });
@@ -436,7 +462,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// DELETE - Cancelar reserva
+// DELETE - Cancelar reserva (sin cambios)
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -451,7 +477,10 @@ export async function DELETE(request: NextRequest) {
     }
 
     const reserva = await prisma.reserva.findUnique({
-      where: { id_reserva: parseInt(reservaId) }
+      where: { id_reserva: parseInt(reservaId) },
+      include: {
+        habitacion: true
+      }
     });
 
     if (!reserva) {
@@ -476,10 +505,21 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    await prisma.reserva.update({
-      where: { id_reserva: parseInt(reservaId) },
-      data: {
-        estado_reserva: 'cancelada'
+    // Transacción: cancelar reserva y liberar habitación
+    await prisma.$transaction(async (tx) => {
+      await tx.reserva.update({
+        where: { id_reserva: parseInt(reservaId) },
+        data: {
+          estado_reserva: 'cancelada'
+        }
+      });
+
+      // Liberar habitación si estaba reservada
+      if (reserva.habitacion.estado === 'reservado') {
+        await tx.habitacion.update({
+          where: { id_habitaciones: reserva.id_habitaciones },
+          data: { estado: 'disponible' }
+        });
       }
     });
 

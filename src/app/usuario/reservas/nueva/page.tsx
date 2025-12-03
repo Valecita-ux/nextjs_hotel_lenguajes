@@ -251,49 +251,64 @@ export default function NuevaReservaPage() {
     return dias > 0 ? dias : 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setSubmitting(true);
 
-    try {
-      const payload = {
-        id_usuario: user.id,
-        id_habitacion: habitacionId,
-        ...formData,
-        servicios_seleccionados: Array.from(serviciosSeleccionados.entries()).map(([id_servicio, cantidad]) => ({ id_servicio, cantidad })),
-        spa_seleccionados: spaSeleccionado,
-        actividades_seleccionadas: actividadesSeleccionadas,
-        paquetes_seleccionados: Array.from(paquetesSeleccionados).map(id_paquete => ({ id_paquete })),
-        restaurante_seleccionado: Array.from(restauranteSeleccionado.entries()).map(([id_restaurante, data]) => ({
-          id_restaurante,
-          cantidad: data.cantidad,
-          fecha_consumo: data.fecha,
-          horario_solicitado: data.horario,
-          observaciones: null
-        }))
-      };
+// REEMPLAZAR LA FUNCIÓN handleSubmit CON ESTA:
 
-      const response = await fetch('/api/reservas', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setError('');
 
-      const data = await response.json();
+  // Validar que haya fechas seleccionadas
+  if (!formData.fecha_inicio || !formData.fecha_fin) {
+    setError('Por favor selecciona las fechas de tu estadía');
+    return;
+  }
 
-      if (data.success) {
-        setSuccess(true);
-        setTimeout(() => router.push('/usuario/reservas'), 2000);
-      } else {
-        setError(data.message);
-      }
-    } catch (err) {
-      setError('Error al crear la reserva');
-    } finally {
-      setSubmitting(false);
-    }
+  // Preparar datos para el checkout
+  const { total: precioTotal, desglose } = calcularPrecioTotal();
+
+  const datosCheckout = {
+    // Datos básicos de la reserva
+    id_habitacion: habitacionId,
+    habitacion_numero: habitacion?.numero_habitaciones,
+    habitacion_tipo: habitacion?.tipo,
+    ...formData,
+    
+    // Servicios seleccionados
+    servicios_seleccionados: Array.from(serviciosSeleccionados.entries()).map(([id_servicio, cantidad]) => ({ 
+      id_servicio, 
+      cantidad 
+    })),
+    spa_seleccionados: spaSeleccionado,
+    actividades_seleccionadas: actividadesSeleccionadas,
+    paquetes_seleccionados: Array.from(paquetesSeleccionados).map(id_paquete => ({ id_paquete })),
+    restaurante_seleccionado: Array.from(restauranteSeleccionado.entries()).map(([id_restaurante, data]) => ({
+      id_restaurante,
+      cantidad: data.cantidad,
+      fecha_consumo: data.fecha,
+      horario_solicitado: data.horario,
+      observaciones: null
+    })),
+    
+    // Precio total y desglose
+    precio_total: precioTotal,
+    desglose
   };
+
+  // Guardar en sessionStorage para el checkout
+  sessionStorage.setItem('reserva_checkout', JSON.stringify(datosCheckout));
+
+  // Redirigir al checkout
+  router.push('/usuario/checkout');
+};
+
+
+// TAMBIÉN ACTUALIZAR EL TEXTO DEL BOTÓN:
+// Busca esta línea en el botón de submit:
+// {submitting ? 'Procesando...' : 'Confirmar Reserva'}
+
+// Y reemplázala con:
+// 'Continuar al Pago'
 
   const getMinDate = () => {
     const tomorrow = new Date();
@@ -414,7 +429,7 @@ export default function NuevaReservaPage() {
 
               <button type="submit" disabled={submitting || !formData.fecha_inicio || !formData.fecha_fin}
                 className="w-full bg-gradient-to-r from-[#7B1D26] to-[#CA99AB] hover:from-[#D4AF37] hover:to-[#895A49] text-white py-4 rounded-xl font-cormorant font-bold text-lg shadow-lg hover:shadow-xl transition-all disabled:opacity-50">
-                {submitting ? 'Procesando...' : 'Confirmar Reserva'}
+                {'Continuar al Pago'}
               </button>
             </form>
 
