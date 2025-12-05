@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 const Lock = (props: any) => <span {...props}>🔒</span>;
 const Check = (props: any) => <span {...props}>✔️</span>;
 const AlertCircle = (props: any) => <span {...props}>⚠️</span>;
-const ChevronLeft = (props: any) => <span {...props}>⬅️</span>;
+const ChevronLeft = (props: any) => <span {...props}></span>;
 const Calendar = (props: any) => <span {...props}></span>;
 const Users = (props: any) => <span {...props}></span>;
 const Flower = (props: any) => <span {...props}>🌸</span>;
